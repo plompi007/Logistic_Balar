@@ -1,0 +1,26 @@
+name: WhatsApp daily logistics report
+
+on:
+  schedule:
+    # שתי הרצות ביום כדי לכסות שעון קיץ/חורף בישראל (UTC+2/UTC+3).
+    # הסקריפט עצמו בודק שהשעה בישראל היא 15:00 בדיוק ומדלג בהרצה השנייה.
+    - cron: '0 12 * * *'
+    - cron: '0 13 * * *'
+  workflow_dispatch: {} # מאפשר הרצה ידנית לבדיקה מטאב Actions
+
+jobs:
+  send-report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: node scripts/send-whatsapp-report.js
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          CALLMEBOT_PHONE: ${{ secrets.CALLMEBOT_PHONE }}
+          CALLMEBOT_APIKEY: ${{ secrets.CALLMEBOT_APIKEY }}
+          # בהרצה ידנית (workflow_dispatch) שולח תמיד, גם אם השעה בישראל שונה מ-15:00 - נוח לבדיקה.
+          FORCE_SEND: ${{ github.event_name == 'workflow_dispatch' && '1' || '' }}
