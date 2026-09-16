@@ -118,14 +118,15 @@ input[type="date"], input[type="time"] { color-scheme: dark; }
 .checkbox-field { flex-direction: row; align-items: center; gap: 10px; }
 .checkbox-field input { width: 18px; height: 18px; accent-color: var(--primary); }
 
-.item-row {
+.item-row { margin-bottom: 8px; }
+.item-row-main {
   display: flex;
   gap: 8px;
-  margin-bottom: 8px;
   align-items: center;
 }
-.item-row input:first-child { flex: 2; }
-.item-row input:last-of-type { flex: 1; }
+.item-row-main .item-name-select { flex: 2; }
+.item-row-main .item-qty { flex: 1; }
+.item-name-other { margin-top: 6px; }
 
 .btn {
   cursor: pointer;

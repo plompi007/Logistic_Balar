@@ -11,7 +11,6 @@
   const errorMsg = document.getElementById('errorMsg');
   const needsClassroom = document.getElementById('needsClassroom');
   const classroomHoursField = document.getElementById('classroomHoursField');
-  const itemRowTemplate = document.getElementById('itemRowTemplate');
   const courseNameSelect = document.getElementById('courseName');
   const courseNameOtherField = document.getElementById('courseNameOtherField');
   const courseNameOther = document.getElementById('courseNameOther');
@@ -59,13 +58,63 @@
     courseNameOtherField.classList.toggle('hidden', courseNameSelect.value !== 'אחר');
   });
 
+  const ITEM_OPTIONS = {
+    equipmentItems: [
+      'איבו', 'אטטי', 'אלפא', 'אנטנת הרחקה', 'בומרנג', 'מתקן הטלה',
+      'תיק הטלות שחור', 'תיק הטלות חום', 'אולרים', 'ערכת עטלף',
+      'פליקן מטיס 3', 'פליקן לוס', 'פליקן B1', 'פליקן B2', 'פליקן C2',
+      'בלוטי', 'פקפק', 'מב"ן חישה', 'רינג', 'עין הבשור', 'פיש',
+      'מגן שמיים', 'בני', 'אחר',
+    ],
+    logisticsItems: ['כיסאות', 'שולחנות', 'תרמוקן', 'משטח הנחתה', 'פאוור בנק', 'אחר'],
+  };
+
   function addItemRow(containerId) {
     const container = document.getElementById(containerId);
-    const node = itemRowTemplate.content.cloneNode(true);
-    node.querySelector('.remove-item-btn').addEventListener('click', (e) => {
-      e.target.closest('.item-row').remove();
+
+    const row = document.createElement('div');
+    row.className = 'item-row';
+
+    const select = document.createElement('select');
+    select.className = 'item-name-select';
+    const placeholderOpt = document.createElement('option');
+    placeholderOpt.value = '';
+    placeholderOpt.disabled = true;
+    placeholderOpt.selected = true;
+    placeholderOpt.textContent = 'בחר/י פריט...';
+    select.appendChild(placeholderOpt);
+    ITEM_OPTIONS[containerId].forEach((name) => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      select.appendChild(opt);
     });
-    container.appendChild(node);
+
+    const otherInput = document.createElement('input');
+    otherInput.type = 'text';
+    otherInput.className = 'item-name-other hidden';
+    otherInput.placeholder = 'נא לפרט את שם הפריט';
+
+    const qtyInput = document.createElement('input');
+    qtyInput.type = 'text';
+    qtyInput.className = 'item-qty';
+    qtyInput.placeholder = 'כמות';
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'btn btn-danger remove-item-btn';
+    removeBtn.textContent = 'הסר';
+    removeBtn.addEventListener('click', () => row.remove());
+
+    select.addEventListener('change', () => {
+      otherInput.classList.toggle('hidden', select.value !== 'אחר');
+    });
+
+    const mainLine = document.createElement('div');
+    mainLine.className = 'item-row-main';
+    mainLine.append(select, qtyInput, removeBtn);
+    row.append(mainLine, otherInput);
+    container.appendChild(row);
   }
 
   document.querySelectorAll('.add-item-btn').forEach((btn) => {
@@ -83,10 +132,13 @@
   function collectItems(containerId) {
     const container = document.getElementById(containerId);
     return Array.from(container.querySelectorAll('.item-row'))
-      .map((row) => ({
-        name: row.querySelector('.item-name').value.trim(),
-        qty: row.querySelector('.item-qty').value.trim(),
-      }))
+      .map((row) => {
+        const select = row.querySelector('.item-name-select');
+        const name = select.value === 'אחר'
+          ? row.querySelector('.item-name-other').value.trim()
+          : select.value;
+        return { name, qty: row.querySelector('.item-qty').value.trim() };
+      })
       .filter((item) => item.name);
   }
 
