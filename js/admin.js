@@ -1,9 +1,10 @@
 (function () {
+  const ADMIN_EMAIL = 'nohar.tzur@gmail.com';
+
   const loginBox = document.getElementById('loginBox');
   const adminPanel = document.getElementById('adminPanel');
-  const emailInput = document.getElementById('emailInput');
-  const passwordInput = document.getElementById('passwordInput');
   const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
   const loginError = document.getElementById('loginError');
   const filterDate = document.getElementById('filterDate');
   const clearFilterBtn = document.getElementById('clearFilterBtn');
@@ -16,24 +17,27 @@
   loginBtn.addEventListener('click', async () => {
     loginError.style.display = 'none';
     try {
-      await window.auth.signInWithEmailAndPassword(emailInput.value.trim(), passwordInput.value);
+      const provider = new firebase.auth.GoogleAuthProvider();
+      await window.auth.signInWithPopup(provider);
     } catch (err) {
       loginError.textContent = 'התחברות נכשלה: ' + err.message;
       loginError.style.display = 'block';
     }
   });
 
-  [emailInput, passwordInput].forEach((el) => {
-    el.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') loginBtn.click();
-    });
-  });
+  logoutBtn.addEventListener('click', () => window.auth.signOut());
 
   window.auth.onAuthStateChanged((user) => {
-    if (user) {
+    if (user && user.email === ADMIN_EMAIL) {
+      loginError.style.display = 'none';
       loginBox.classList.add('hidden');
       adminPanel.classList.remove('hidden');
       loadSubmissions();
+    } else if (user) {
+      // מחובר עם חשבון Google שאינו מורשה לניהול
+      window.auth.signOut();
+      loginError.textContent = `החשבון ${user.email} אינו מורשה לניהול. יש להתחבר עם ${ADMIN_EMAIL}`;
+      loginError.style.display = 'block';
     } else {
       loginBox.classList.remove('hidden');
       adminPanel.classList.add('hidden');

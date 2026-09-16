@@ -10,8 +10,9 @@ service cloud.firestore {
         && request.resource.data.courseDate is string
         && request.resource.data.courseDate.size() > 0;
 
-      // קריאה, עדכון ומחיקה מותרים רק למנהל מחובר (עמוד /admin.html).
-      allow read, update, delete: if request.auth != null;
+      // קריאה, עדכון ומחיקה מותרים רק למנהל המורשה (כניסה עם Google), דרך עמוד /admin.html.
+      allow read, update, delete: if request.auth != null
+        && request.auth.token.email == "nohar.tzur@gmail.com";
     }
   }
 }
