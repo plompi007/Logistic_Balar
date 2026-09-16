@@ -205,7 +205,7 @@
       ? allSubmissions.filter((i) => i.courseDate === filterDate.value)
       : allSubmissions;
     const title = filterDate.value
-      ? `דוח דרישות לוגיסטיות - קורסי ${filterDate.value}`
+      ? `דוח דרישות לוגיסטיות - קורסי ${window.LogisticReport.fmtDateHe(filterDate.value)}`
       : 'דוח דרישות לוגיסטיות - כלל הקורסים';
     const html = window.LogisticReport.buildReportHtml(items, { title });
     const blob = new Blob([html], { type: 'text/html' });

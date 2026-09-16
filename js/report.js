@@ -34,18 +34,30 @@
     return new Date(submission.submittedAt) > deadline;
   }
 
+  // פורמט dd/mm/yy קבוע (לא תלוי locale/timezone של הדפדפן/שרת - תמיד לפי UTC).
   function fmtDateHe(dateLike) {
     if (!dateLike) return '';
     const d = new Date(dateLike);
-    return d.toLocaleDateString('he-IL', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    if (Number.isNaN(d.getTime())) return '';
+    const dd = String(d.getUTCDate()).padStart(2, '0');
+    const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const yy = String(d.getUTCFullYear()).slice(-2);
+    return `${dd}/${mm}/${yy}`;
   }
 
+  // פורמט "dd/mm/yy, HH:MM" קבוע, תמיד לפי שעון ישראל (חשוב כי הסקריפטים המתוזמנים רצים
+  // ב-GitHub Actions בשעון UTC - בלי timeZone מפורש השעה שתוצג תהיה שגויה בשעתיים-שלוש).
   function fmtDateTimeHe(dateLike) {
     if (!dateLike) return '';
     const d = new Date(dateLike);
-    return d.toLocaleString('he-IL', {
-      year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
+    if (Number.isNaN(d.getTime())) return '';
+    const fmt = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Jerusalem',
+      day: '2-digit', month: '2-digit', year: '2-digit',
+      hour: '2-digit', minute: '2-digit', hour12: false,
     });
+    const parts = Object.fromEntries(fmt.formatToParts(d).map((p) => [p.type, p.value]));
+    return `${parts.day}/${parts.month}/${parts.year}, ${parts.hour}:${parts.minute}`;
   }
 
   function itemsList(items) {
@@ -526,5 +538,5 @@
 </html>`;
   }
 
-  return { buildReportHtml, buildEmailHtml, buildFeedbackDigestEmailHtml, isLate, deadlineFor, summarizeItems };
+  return { buildReportHtml, buildEmailHtml, buildFeedbackDigestEmailHtml, isLate, deadlineFor, summarizeItems, fmtDateHe };
 });

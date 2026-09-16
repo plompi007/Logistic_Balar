@@ -3,7 +3,7 @@
 const nodemailer = require('nodemailer');
 const { currentJerusalemHour } = require('./lib/time');
 const { fetchTomorrowSubmissions } = require('./lib/firestore');
-const { buildEmailHtml } = require('../js/report.js');
+const { buildEmailHtml, fmtDateHe } = require('../js/report.js');
 
 const TARGET_HOUR = 18;
 const DEFAULT_RECIPIENT = 'yonatan1279@gmail.com';
@@ -37,7 +37,7 @@ async function main() {
   }
 
   const { targetDate, submissions } = await fetchTomorrowSubmissions();
-  const title = `דוח דרישות לוגיסטיות - קורסי ${targetDate}`;
+  const title = `דוח דרישות לוגיסטיות - קורסי ${fmtDateHe(targetDate)}`;
   const html = buildEmailHtml(submissions, { title });
 
   await sendEmail({ subject: title, html });

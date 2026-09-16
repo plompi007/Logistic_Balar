@@ -2,7 +2,7 @@
 // רץ בתוך GitHub Actions (ראו .github/workflows/whatsapp-daily-report.yml).
 const { currentJerusalemHour } = require('./lib/time');
 const { fetchTomorrowSubmissions } = require('./lib/firestore');
-const { isLate } = require('../js/report.js');
+const { isLate, fmtDateHe } = require('../js/report.js');
 
 const TARGET_HOUR = 15;
 
@@ -15,7 +15,7 @@ function itemsLine(items) {
 }
 
 function buildMessage(courseDateStr, submissions) {
-  const header = `*דרישות לוגיסטיות לקורסים של ${courseDateStr}*\n(${submissions.length} דרישות)`;
+  const header = `*דרישות לוגיסטיות לקורסים של ${fmtDateHe(courseDateStr)}*\n(${submissions.length} דרישות)`;
   if (submissions.length === 0) {
     return `${header}\n\nלא הוגשו דרישות ליום זה.`;
   }
