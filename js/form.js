@@ -42,10 +42,20 @@
     successMsg.style.display = 'none';
     errorMsg.style.display = 'none';
 
+    const submitterName = document.getElementById('submitterName').value.trim();
+    const courseName = document.getElementById('courseName').value.trim();
+    const courseDate = document.getElementById('courseDate').value;
+    if (!submitterName || !courseName || !courseDate) {
+      errorMsg.textContent = 'יש למלא שם מגיש, שם קורס ותאריך קורס';
+      errorMsg.style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     const payload = {
-      submitterName: document.getElementById('submitterName').value.trim(),
-      courseName: document.getElementById('courseName').value.trim(),
-      courseDate: document.getElementById('courseDate').value,
+      submitterName,
+      courseName,
+      courseDate,
       startTime: document.getElementById('startTime').value,
       endTime: document.getElementById('endTime').value,
       traineesCount: document.getElementById('traineesCount').value,
@@ -54,6 +64,7 @@
       equipmentItems: collectItems('equipmentItems'),
       logisticsItems: collectItems('logisticsItems'),
       notes: document.getElementById('notes').value.trim(),
+      submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
     };
 
     const submitBtn = form.querySelector('button[type="submit"]');
@@ -61,13 +72,7 @@
     submitBtn.textContent = 'שולח...';
 
     try {
-      const res = await fetch('/api/submissions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'שגיאה בשליחה');
+      await window.db.collection('submissions').add(payload);
 
       form.reset();
       document.querySelectorAll('#equipmentItems, #logisticsItems').forEach((c) => (c.innerHTML = ''));
@@ -78,7 +83,7 @@
       successMsg.style.display = 'block';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
-      errorMsg.textContent = err.message;
+      errorMsg.textContent = 'שגיאה בשליחה: ' + err.message;
       errorMsg.style.display = 'block';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {

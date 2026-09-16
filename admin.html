@@ -4,14 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ניהול דרישות לוגיסטיות</title>
-<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="container" style="max-width: 960px;">
 
   <div id="loginBox">
     <h2 style="margin:0;text-align:center;">כניסת מנהל</h2>
-    <input type="password" id="passwordInput" placeholder="סיסמת מנהל">
+    <input type="email" id="emailInput" placeholder="אימייל מנהל" autocomplete="username">
+    <input type="password" id="passwordInput" placeholder="סיסמה" autocomplete="current-password">
     <button class="btn btn-primary" id="loginBtn">כניסה</button>
     <p id="loginError" style="color:#991b1b; display:none; margin:0; text-align:center;"></p>
   </div>
@@ -36,6 +37,12 @@
   </div>
 </div>
 
-<script src="/js/admin.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/firebase-init.js"></script>
+<script src="js/report.js"></script>
+<script src="js/admin.js"></script>
 </body>
 </html>
