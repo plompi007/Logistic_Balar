@@ -456,5 +456,65 @@
 </html>`;
   }
 
-  return { buildReportHtml, buildEmailHtml, isLate, deadlineFor, summarizeItems };
+  // דוח שבועי (מייל) של כל דיווחי הבאגים/הצעות השיפור שהתקבלו.
+  function feedbackEntryBlock(entry, index) {
+    const isBug = entry.type === 'bug';
+    const badgeColor = isBug ? '#d5384f' : '#0f9d68';
+    const badgeBg = isBug ? '#fdeaee' : '#e5f7ef';
+    const badgeText = isBug ? '🐛 באג' : '💡 הצעת שיפור';
+    const who = entry.submitterName || entry.submitterEmail || '-';
+
+    return `<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom:14px;border:1px solid #e6e9f0;border-radius:8px;overflow:hidden;">
+      <tr><td style="padding:14px 18px;background:#ffffff;">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+          <tr>
+            <td style="font-size:14px;font-weight:bold;color:#1a2233;">${index}. ${escapeHtml(who)}</td>
+            <td align="left" style="white-space:nowrap;">
+              <span style="display:inline-block;font-size:12px;font-weight:bold;color:${badgeColor};background:${badgeBg};padding:4px 10px;border-radius:999px;">${badgeText}</span>
+            </td>
+          </tr>
+        </table>
+        <div style="margin-top:8px;font-size:13px;color:#1a2233;line-height:1.5;white-space:pre-wrap;">${escapeHtml(entry.message || '')}</div>
+        <div style="margin-top:10px;font-size:11px;color:#9ca3af;">${escapeHtml(entry.submitterEmail || '')} · הוגש בתאריך: ${escapeHtml(fmtDateTimeHe(entry.submittedAt))}</div>
+      </td></tr>
+    </table>`;
+  }
+
+  function buildFeedbackDigestEmailHtml(entries, { title } = {}) {
+    const sorted = [...entries].sort((a, b) => new Date(a.submittedAt || 0) - new Date(b.submittedAt || 0));
+    const bugCount = sorted.filter((e) => e.type === 'bug').length;
+    const suggestionCount = sorted.length - bugCount;
+    const generatedAt = fmtDateTimeHe(new Date());
+    const body = sorted.map((e, i) => feedbackEntryBlock(e, i + 1)).join('');
+
+    return `<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<title>${escapeHtml(title || 'דוח שבועי - באגים והצעות שיפור')}</title>
+</head>
+<body style="margin:0;padding:0;background:#eef1f7;" dir="rtl">
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#eef1f7;">
+    <tr><td align="center" style="padding:24px 12px;">
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;font-family:Arial,Helvetica,sans-serif;">
+        <tr><td style="text-align:center;padding-bottom:20px;">
+          <div style="font-size:20px;font-weight:bold;color:#3457d5;">${escapeHtml(title || 'דוח שבועי - באגים והצעות שיפור')}</div>
+          <div style="font-size:12px;color:#667085;margin-top:4px;">נוצר בתאריך: ${generatedAt}</div>
+          <div style="margin-top:10px;">
+            <span style="display:inline-block;background:#fdeaee;color:#d5384f;font-size:12px;font-weight:bold;padding:4px 12px;border-radius:999px;margin:0 4px;">באגים: ${bugCount}</span>
+            <span style="display:inline-block;background:#e5f7ef;color:#0f9d68;font-size:12px;font-weight:bold;padding:4px 12px;border-radius:999px;margin:0 4px;">הצעות שיפור: ${suggestionCount}</span>
+          </div>
+        </td></tr>
+        <tr><td>${body}</td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+  }
+
+  return { buildReportHtml, buildEmailHtml, buildFeedbackDigestEmailHtml, isLate, deadlineFor, summarizeItems };
 });

@@ -26,4 +26,20 @@ async function fetchTomorrowSubmissions() {
   return { targetDate, submissions };
 }
 
-module.exports = { fetchTomorrowSubmissions };
+// שולף דיווחי משוב (באגים/הצעות) שהוגשו ב-N הימים האחרונים.
+async function fetchRecentFeedback(days) {
+  ensureInitialized();
+  const db = getFirestore();
+  const { Timestamp } = require('firebase-admin/firestore');
+  const since = Timestamp.fromDate(new Date(Date.now() - days * 24 * 60 * 60 * 1000));
+  const snapshot = await db.collection('feedback').where('submittedAt', '>=', since).get();
+  return snapshot.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      ...data,
+      submittedAt: data.submittedAt && data.submittedAt.toDate ? data.submittedAt.toDate().toISOString() : null,
+    };
+  });
+}
+
+module.exports = { fetchTomorrowSubmissions, fetchRecentFeedback };

@@ -21,6 +21,9 @@
 3. **דוח WhatsApp יומי אוטומטי** - כל יום בשעה 15:00 (שעון ישראל) נשלחת הודעת WhatsApp עם כל
    הדרישות שהוגשו לקורסים של **מחר**, מסודרות וקריאות. רץ אוטומטית דרך GitHub Actions - לא
    דורש שרת. פרטים מלאים בהמשך.
+4. **דיווח באגים/הצעות שיפור** - כפתור בתחתית הטופס הציבורי פותח טופס קצר (סוג: באג/הצעה +
+   תיאור חופשי), שנשלח ל-Firestore יחד עם זהות המדווח. כל יום ראשון ב-09:00 (שעון ישראל)
+   נשלח מייל עם כל הדיווחים שהתקבלו באותו שבוע - **רק אם היה לפחות דיווח אחד**.
 
 ## הקמה חד-פעמית ב-Firebase
 
@@ -43,7 +46,8 @@
    אבל קריאה/עדכון/מחיקה של דרישות קיימות מותרים רק לחשבונות ה-Google שמוגדרים כמנהלים
    (`nohar.tzur@gmail.com`, `yonatan1279@gmail.com`). כדי להוסיף/להסיר מנהל בעתיד יש לעדכן
    את רשימת האימיילים בשני מקומות יחד: מערך ה-emails ב-`firestore.rules` (ואז Publish מחדש)
-   והמערך `ADMIN_EMAILS` ב-`js/admin.js`.
+   והמערך `ADMIN_EMAILS` ב-`js/admin.js`. אותו קובץ כולל גם את הכללים ל-collection הנוסף
+   `feedback` (דיווחי באגים/הצעות שיפור) - אין צורך בהגדרה נפרדת.
 
 ## פרסום כאתר חי דרך GitHub Pages
 
@@ -124,6 +128,22 @@ variable בשם `EMAIL_TO` עם כתובת יעד אחרת, אם רוצים לש
 הסקריפט עצמו נמצא ב-[`scripts/send-email-report.js`](scripts/send-email-report.js), וה-workflow
 ב-[`.github/workflows/email-daily-report.yml`](.github/workflows/email-daily-report.yml).
 
+## הקמה חד-פעמית - דוח שבועי של דיווחי באגים/הצעות (אופציונלי)
+
+אותו רעיון בדיוק כמו דוח המייל היומי, רק שרץ פעם בשבוע (יום ראשון ב-09:00 שעון ישראל) ושולח
+**רק אם יש לפחות דיווח אחד** מאז השבוע הקודם. אם כבר הגדרתם את ה-secrets `FIREBASE_SERVICE_ACCOUNT`,
+`GMAIL_USER` ו-`GMAIL_APP_PASSWORD` למייל היומי - **אין צורך להגדיר שום דבר נוסף**, זה כבר
+עובד עם אותם secrets.
+
+ברירת המחדל לנמען היא `nohar.tzur@gmail.com`. כדי לשנות: **Settings → Secrets and variables →
+Actions → Variables** → New repository variable בשם `FEEDBACK_EMAIL_TO`.
+
+אפשר לבדוק ידנית: **Actions** → **Weekly feedback digest** → **Run workflow** (זה ישלח מיד
+אם יש דיווחים, בלי לחכות ליום ראשון).
+
+הסקריפט: [`scripts/send-feedback-digest.js`](scripts/send-feedback-digest.js), ה-workflow:
+[`.github/workflows/feedback-weekly-digest.yml`](.github/workflows/feedback-weekly-digest.yml).
+
 ## הרצה מקומית לבדיקה
 
 אין תהליך build - מספיק שרת קבצים סטטי כלשהו, למשל:
@@ -149,12 +169,14 @@ js/firebase-init.js                     אתחול Firebase SDK
 js/firebase-config.js                   פרטי החיבור לפרויקט Firebase שלכם (יש למלא!)
 firestore.rules                         כללי האבטחה של מסד הנתונים
 firebase.json                           הגדרת CLI לפריסת ה-rules
-scripts/lib/time.js                     עזרי שעון ישראל (משותף לשני הדוחות המתוזמנים)
-scripts/lib/firestore.js                שליפת דרישות "מחר" מ-Firestore דרך Service Account (משותף)
+scripts/lib/time.js                     עזרי שעון ישראל (משותף לכל הסקריפטים המתוזמנים)
+scripts/lib/firestore.js                שליפת נתונים מ-Firestore דרך Service Account (משותף)
 scripts/send-whatsapp-report.js         שליחת דוח WhatsApp יומי (רץ ב-GitHub Actions בלבד)
 scripts/send-email-report.js            שליחת דוח מייל יומי (רץ ב-GitHub Actions בלבד)
+scripts/send-feedback-digest.js         שליחת דוח שבועי של דיווחי באגים/הצעות (רץ ב-GitHub Actions בלבד)
 .github/workflows/whatsapp-daily-report.yml   תזמון ה-cron היומי לדוח ה-WhatsApp
 .github/workflows/email-daily-report.yml      תזמון ה-cron היומי לדוח המייל
+.github/workflows/feedback-weekly-digest.yml  תזמון ה-cron השבועי לדוח הדיווחים
 package.json / package-lock.json        תלויות ה-Node (firebase-admin, nodemailer) לסקריפטים המתוזמנים
 ```
 

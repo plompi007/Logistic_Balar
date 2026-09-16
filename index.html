@@ -142,6 +142,26 @@
   <p style="text-align:center; margin-top: 18px;">
     <a href="admin.html" style="color: var(--muted); font-size: 0.85rem;">כניסת מנהל</a>
   </p>
+
+  <div style="text-align:center; margin-top: 10px;">
+    <button type="button" id="feedbackToggleBtn" class="btn btn-secondary" style="font-size:0.8rem; padding:8px 16px;">🐛 דיווח על באג / הצעת שיפור</button>
+  </div>
+
+  <div id="feedbackForm" class="hidden" style="margin-top: 14px; background: var(--card-alt); border: 1px solid var(--border-soft); border-radius: 12px; padding: 16px;">
+    <div class="field">
+      <label for="feedbackType">סוג</label>
+      <select id="feedbackType">
+        <option value="bug">באג</option>
+        <option value="suggestion">הצעת שיפור</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="feedbackMessage">מה קרה / מה הרעיון?</label>
+      <textarea id="feedbackMessage" placeholder="נא לפרט..."></textarea>
+    </div>
+    <button type="button" id="feedbackSubmitBtn" class="btn btn-primary" style="width:100%;">שליחת הדיווח</button>
+  </div>
+  <div id="feedbackSuccess" class="hidden" style="text-align:center; color: var(--success); margin-top: 10px; font-size: 0.85rem; font-weight: 600;">תודה! הדיווח נשלח.</div>
   </div>
 </div>
 

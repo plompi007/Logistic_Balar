@@ -16,4 +16,11 @@ function tomorrowJerusalemDateStr() {
   return `${y}-${m}-${d}`;
 }
 
-module.exports = { TIMEZONE, currentJerusalemHour, tomorrowJerusalemDateStr };
+// 0 = ראשון, 1 = שני, ... 6 = שבת (לפי שעון ישראל).
+function currentJerusalemWeekday() {
+  const fmt = new Intl.DateTimeFormat('en-US', { timeZone: TIMEZONE, weekday: 'short' });
+  const days = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+  return days[fmt.format(new Date())];
+}
+
+module.exports = { TIMEZONE, currentJerusalemHour, currentJerusalemWeekday, tomorrowJerusalemDateStr };

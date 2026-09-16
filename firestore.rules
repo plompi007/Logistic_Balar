@@ -20,5 +20,20 @@ service cloud.firestore {
           "yonatan1279@gmail.com"
         ];
     }
+
+    match /feedback/{feedbackId} {
+      // כל משתמש מחובר יכול לדווח על באג/הצעת שיפור מהטופס הציבורי.
+      allow create: if request.auth != null
+        && request.resource.data.submitterEmail == request.auth.token.email
+        && request.resource.data.message is string
+        && request.resource.data.message.size() > 0;
+
+      // קריאה ומחיקה מותרות רק למנהלים המורשים.
+      allow read, delete: if request.auth != null
+        && request.auth.token.email.lower() in [
+          "nohar.tzur@gmail.com",
+          "yonatan1279@gmail.com"
+        ];
+    }
   }
 }

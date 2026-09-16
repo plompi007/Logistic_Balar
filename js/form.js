@@ -230,4 +230,45 @@
       submitBtn.textContent = 'שליחת הדרישה';
     }
   });
+
+  const feedbackToggleBtn = document.getElementById('feedbackToggleBtn');
+  const feedbackForm = document.getElementById('feedbackForm');
+  const feedbackType = document.getElementById('feedbackType');
+  const feedbackMessage = document.getElementById('feedbackMessage');
+  const feedbackSubmitBtn = document.getElementById('feedbackSubmitBtn');
+  const feedbackSuccess = document.getElementById('feedbackSuccess');
+
+  feedbackToggleBtn.addEventListener('click', () => {
+    feedbackSuccess.classList.add('hidden');
+    feedbackForm.classList.toggle('hidden');
+  });
+
+  feedbackSubmitBtn.addEventListener('click', async () => {
+    const message = feedbackMessage.value.trim();
+    if (!message) {
+      feedbackMessage.focus();
+      return;
+    }
+    const currentUser = window.auth.currentUser;
+    feedbackSubmitBtn.disabled = true;
+    feedbackSubmitBtn.textContent = 'שולח...';
+    try {
+      await window.db.collection('feedback').add({
+        type: feedbackType.value,
+        message,
+        submitterEmail: currentUser ? currentUser.email : '',
+        submitterName: (currentUser && currentUser.displayName) || '',
+        submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+      feedbackMessage.value = '';
+      feedbackType.value = 'bug';
+      feedbackForm.classList.add('hidden');
+      feedbackSuccess.classList.remove('hidden');
+    } catch (err) {
+      alert('שגיאה בשליחת הדיווח: ' + err.message);
+    } finally {
+      feedbackSubmitBtn.disabled = false;
+      feedbackSubmitBtn.textContent = 'שליחת הדיווח';
+    }
+  });
 })();
