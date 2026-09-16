@@ -62,6 +62,11 @@
     }[c]));
   }
 
+  // עוטף ערכים שעלולים לערבב עברית עם אנגלית/מספרים (שמות קורסים) ב-<bdi>, למניעת סדר bidi מבלבל.
+  function bdi(str) {
+    return `<bdi>${escapeHtml(str)}</bdi>`;
+  }
+
   function renderTable(items) {
     if (!items.length) {
       tableWrap.innerHTML = '<p style="text-align:center;color:#6b7280;">אין דרישות להצגה</p>';
@@ -74,10 +79,10 @@
       .map((item) => {
         const late = window.LogisticReport.isLate(item);
         return `<tr class="${late ? 'late' : ''}" data-id="${item.id}">
-          <td>${escapeHtml(item.courseName)}</td>
+          <td>${bdi(item.courseName)}</td>
           <td>${escapeHtml(item.courseDate)}</td>
           <td>${escapeHtml(item.startTime)}-${escapeHtml(item.endTime)}</td>
-          <td title="${escapeHtml(item.submitterEmail || '')}">${escapeHtml(item.submitterName)}</td>
+          <td title="${escapeHtml(item.submitterEmail || '')}">${bdi(item.submitterName)}</td>
           <td>${escapeHtml(item.traineesCount || '-')}</td>
           <td><span class="tag ${late ? 'tag-late' : 'tag-ok'}">${late ? 'באיחור' : 'בזמן'}</span></td>
           <td><button class="btn btn-danger delete-btn" data-id="${item.id}">מחק</button></td>

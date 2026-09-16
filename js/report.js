@@ -14,6 +14,12 @@
     }[c]));
   }
 
+  // עוטף ערכים שעלולים לערבב עברית עם אנגלית/מספרים (שמות קורסים, מיקומים, פריטים) ב-<bdi>,
+  // כדי שאלגוריתם ה-bidi לא "יסדר מחדש" את הטקסט בצורה מבלבלת בתוך משפט בעברית.
+  function bdi(str) {
+    return `<bdi>${escapeHtml(str)}</bdi>`;
+  }
+
   // מועד ההגשה האחרון הוא 12:00 יום לפני הקורס.
   function deadlineFor(courseDate) {
     if (!courseDate) return null;
@@ -46,7 +52,7 @@
     const clean = (Array.isArray(items) ? items : []).filter((i) => i && (i.name || '').trim());
     if (clean.length === 0) return '<p class="empty">לא צוין</p>';
     return `<ul>${clean
-      .map((i) => `<li><span class="item-dot"></span><span class="item-name">${escapeHtml(i.name)}</span><span class="item-qty">${escapeHtml(i.qty || '-')}</span></li>`)
+      .map((i) => `<li><span class="item-dot"></span><span class="item-name">${bdi(i.name)}</span><span class="item-qty">${bdi(i.qty || '-')}</span></li>`)
       .join('')}</ul>`;
   }
 
@@ -60,7 +66,7 @@
     const late = isLate(s);
     const rows = [
       metaRow([
-        ['שם המדריך', escapeHtml(s.submitterName || '-')],
+        ['שם המדריך', bdi(s.submitterName || '-')],
         ['תאריך הקורס', escapeHtml(fmtDateHe(s.courseDate) || s.courseDate || '-')],
       ]),
       metaRow([
@@ -68,7 +74,7 @@
         ['כמות חניכים', escapeHtml(s.traineesCount || '-')],
       ]),
       metaRow([
-        ['מיקום / עמדה', escapeHtml(s.location || '-')],
+        ['מיקום / עמדה', bdi(s.location || '-')],
         ['צורך בכיתה', s.needsClassroom ? 'כן' : 'לא'],
       ]),
     ];
@@ -81,7 +87,7 @@
       <header class="card-header">
         <div class="card-title">
           <span class="card-index">${index}</span>
-          <h2>${escapeHtml(s.courseName || '(ללא שם קורס)')}</h2>
+          <h2>${bdi(s.courseName || '(ללא שם קורס)')}</h2>
         </div>
         ${late ? '<span class="badge badge-late">⚠ הוגש באיחור</span>' : '<span class="badge badge-ok">✓ הוגש בזמן</span>'}
       </header>
@@ -275,7 +281,7 @@
   function emailItemsBlock(title, items) {
     const clean = (Array.isArray(items) ? items : []).filter((i) => i && (i.name || '').trim());
     const rows = clean.length
-      ? clean.map((i) => `<div style="padding:2px 0;font-size:13px;color:#1a2233;">• ${escapeHtml(i.name)} <span style="color:#3457d5;">(כמות: ${escapeHtml(i.qty || '-')})</span></div>`).join('')
+      ? clean.map((i) => `<div style="padding:2px 0;font-size:13px;color:#1a2233;">• ${bdi(i.name)} <span style="color:#3457d5;">(כמות: ${bdi(i.qty || '-')})</span></div>`).join('')
       : `<div style="font-size:13px;color:#9ca3af;">לא צוין</div>`;
     return `<div style="margin-top:12px;">
       <div style="font-size:13px;font-weight:bold;color:#3457d5;margin-bottom:4px;">${escapeHtml(title)}</div>
@@ -290,10 +296,10 @@
     const statusText = late ? '⚠ הוגש באיחור' : '✓ הוגש בזמן';
 
     const metaRows = [
-      emailFieldRow('שם המדריך', escapeHtml(s.submitterName || '-')),
+      emailFieldRow('שם המדריך', bdi(s.submitterName || '-')),
       emailFieldRow('תאריך הקורס', escapeHtml(fmtDateHe(s.courseDate) || s.courseDate || '-')),
       emailFieldRow('שעות הקורס', `${escapeHtml(s.startTime || '-')} - ${escapeHtml(s.endTime || '-')}`),
-      emailFieldRow('מיקום / עמדה', escapeHtml(s.location || '-')),
+      emailFieldRow('מיקום / עמדה', bdi(s.location || '-')),
       emailFieldRow('כמות חניכים', escapeHtml(s.traineesCount || '-')),
       emailFieldRow('צורך בכיתה', s.needsClassroom ? 'כן' : 'לא'),
     ];
@@ -307,7 +313,7 @@
       <tr><td style="padding:16px 20px;background:#ffffff;">
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
-            <td style="font-size:16px;font-weight:bold;color:#1a2233;">${index}. ${escapeHtml(s.courseName || '(ללא שם קורס)')}</td>
+            <td style="font-size:16px;font-weight:bold;color:#1a2233;">${index}. ${bdi(s.courseName || '(ללא שם קורס)')}</td>
             <td align="left" style="white-space:nowrap;">
               <span style="display:inline-block;font-size:12px;font-weight:bold;color:${statusColor};background:${statusBg};padding:4px 10px;border-radius:999px;">${statusText}</span>
             </td>
@@ -350,8 +356,8 @@
 
   function emailSummaryRow(name, valueText) {
     return `<tr>
-      <td style="padding:5px 0;border-bottom:1px solid #e6e9f0;font-size:13px;color:#1a2233;" valign="top">${escapeHtml(name)}</td>
-      <td align="left" style="padding:5px 0;border-bottom:1px solid #e6e9f0;font-size:13px;color:#3457d5;font-weight:bold;white-space:nowrap;" valign="top">${escapeHtml(valueText)}</td>
+      <td style="padding:5px 0;border-bottom:1px solid #e6e9f0;font-size:13px;color:#1a2233;" valign="top">${bdi(name)}</td>
+      <td align="left" style="padding:5px 0;border-bottom:1px solid #e6e9f0;font-size:13px;color:#3457d5;font-weight:bold;white-space:nowrap;" valign="top">${bdi(valueText)}</td>
     </tr>`;
   }
 
@@ -374,21 +380,24 @@
   }
 
   // בונה שורת "בשעה X:XX פתיחת עמדות [קורס] ב[מיקום] - [ציוד]" בסגנון לוח המשימות היומי.
+  // כל פריט (וכל שם קורס/מיקום) עטוף ב-<bdi> כדי שמספרים ומילים באנגלית בתוך משפט עברי
+  // לא "יזלגו"/יתחלפו בסדר שלהם בגלל אלגוריתם ה-bidi.
   function scheduleItemsText(items) {
     const clean = (Array.isArray(items) ? items : []).filter((i) => i && (i.name || '').trim());
     if (!clean.length) return '';
-    return clean.map((i) => (i.qty && i.qty !== '-' ? `${i.qty} ${i.name}` : i.name)).join(', ');
+    return clean.map((i) => bdi(i.qty && i.qty !== '-' ? `${i.qty} ${i.name}` : i.name)).join(', ');
   }
 
   function emailScheduleRow(s) {
-    const time = s.startTime || '--:--';
-    const loc = s.location ? ` ב${s.location}` : '';
+    const time = escapeHtml(s.startTime || '--:--');
+    const courseName = bdi(s.courseName || '');
+    const loc = s.location ? ` ב${bdi(s.location)}` : '';
     const allItems = [...(Array.isArray(s.equipmentItems) ? s.equipmentItems : []), ...(Array.isArray(s.logisticsItems) ? s.logisticsItems : [])];
     const items = scheduleItemsText(allItems);
     const itemsPart = items ? ` - ${items}` : '';
     return `<tr><td style="padding:6px 0;border-bottom:1px solid #e6e9f0;font-size:13px;color:#1a2233;" valign="top">
-      <span style="font-weight:bold;color:#3457d5;">בשעה ${escapeHtml(time)}</span>
-      פתיחת עמדות <span style="font-weight:bold;">${escapeHtml(s.courseName || '')}</span>${escapeHtml(loc)}${escapeHtml(itemsPart)}
+      <span style="font-weight:bold;color:#3457d5;">בשעה ${time}</span>
+      פתיחת עמדות <span style="font-weight:bold;">${courseName}</span>${loc}${itemsPart}
     </td></tr>`;
   }
 
@@ -469,7 +478,7 @@
       <tr><td style="padding:14px 18px;background:#ffffff;">
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
-            <td style="font-size:14px;font-weight:bold;color:#1a2233;">${index}. ${escapeHtml(who)}</td>
+            <td style="font-size:14px;font-weight:bold;color:#1a2233;">${index}. ${bdi(who)}</td>
             <td align="left" style="white-space:nowrap;">
               <span style="display:inline-block;font-size:12px;font-weight:bold;color:${badgeColor};background:${badgeBg};padding:4px 10px;border-radius:999px;">${badgeText}</span>
             </td>
