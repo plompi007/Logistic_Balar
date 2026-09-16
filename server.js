@@ -8,7 +8,7 @@ const { buildReportHtml } = require('./lib/report');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'balar2026';
 const EXPORT_CRON = process.env.EXPORT_CRON; // e.g. "0 15 * * *" for every day at 15:00
 
 app.use(express.json());
