@@ -26,10 +26,15 @@
 2. **Build → Firestore Database → Create database** - לבחור location אירופאי (למשל `eur3`
    או `europe-west1`) ו-"Start in production mode". **לא ניתן לשנות location אחרי היצירה.**
 3. **Build → Authentication → Sign-in method** - להפעיל את **Google**.
-4. **Project settings** (גלגל השיניים) **→ General → Your apps → Add app → Web (</>)** -
+4. **חובה, אחרת ההתחברות לא תעבוד בכלל:** **Authentication → Settings → Authorized domains**
+   → **Add domain** → להוסיף את הדומיין המדויק שבו GitHub Pages מארח את האתר (בלי `https://`
+   ובלי נתיב, רק השם - למשל `plompi007.github.io`). Firebase מאשר כברירת מחדל רק
+   `localhost` ואת הדומיינים של Firebase עצמו, ולכן בלי השלב הזה **כפתור "התחברות עם Google"
+   לא יעשה כלום** (אפילו לא יפתח חלון/יבקש סיסמה) - כי הבקשה נחסמת עוד לפני שהיא יוצאת.
+5. **Project settings** (גלגל השיניים) **→ General → Your apps → Add app → Web (</>)** -
    להעתיק את אובייקט ה-config שמתקבל.
-5. להדביק את הערכים בקובץ [`js/firebase-config.js`](js/firebase-config.js) במקום ה-`REPLACE_ME`.
-6. להעלות את כללי האבטחה מהקובץ [`firestore.rules`](firestore.rules) לטאב **Firestore →
+6. להדביק את הערכים בקובץ [`js/firebase-config.js`](js/firebase-config.js) במקום ה-`REPLACE_ME`.
+7. להעלות את כללי האבטחה מהקובץ [`firestore.rules`](firestore.rules) לטאב **Firestore →
    Rules** בקונסולה (העתק-הדבק ו-Publish), או דרך ה-CLI: `firebase deploy --only firestore:rules`.
    הכללים מאפשרים לכל אחד להגיש דרישה חדשה, אבל קריאה/עדכון/מחיקה מותרים רק לחשבונות ה-Google
    שמוגדרים כמנהלים (`nohar.tzur@gmail.com`, `yonatan1279@gmail.com`). כדי להוסיף/להסיר מנהל

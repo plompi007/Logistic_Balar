@@ -1,9 +1,22 @@
 (function () {
+  function showFatalError(message) {
+    console.error(message);
+    const banner = document.createElement('div');
+    banner.textContent = message;
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#f2607a;color:#fff;' +
+      'padding:12px;text-align:center;font-weight:600;z-index:9999;direction:rtl;';
+    document.addEventListener('DOMContentLoaded', () => document.body.prepend(banner));
+  }
+
   if (!window.firebase || !window.FIREBASE_CONFIG) {
-    console.error('Firebase SDK או firebase-config.js לא נטענו כראוי');
+    showFatalError('שגיאה: Firebase SDK או firebase-config.js לא נטענו כראוי');
     return;
   }
-  firebase.initializeApp(window.FIREBASE_CONFIG);
-  window.db = firebase.firestore();
-  window.auth = firebase.auth();
+  try {
+    firebase.initializeApp(window.FIREBASE_CONFIG);
+    window.db = firebase.firestore();
+    window.auth = firebase.auth();
+  } catch (err) {
+    showFatalError('שגיאה באתחול Firebase: ' + err.message);
+  }
 })();
