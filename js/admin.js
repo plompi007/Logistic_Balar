@@ -77,7 +77,7 @@
           <td>${escapeHtml(item.courseName)}</td>
           <td>${escapeHtml(item.courseDate)}</td>
           <td>${escapeHtml(item.startTime)}-${escapeHtml(item.endTime)}</td>
-          <td>${escapeHtml(item.submitterName)}</td>
+          <td title="${escapeHtml(item.submitterEmail || '')}">${escapeHtml(item.submitterName)}</td>
           <td>${escapeHtml(item.traineesCount || '-')}</td>
           <td><span class="tag ${late ? 'tag-late' : 'tag-ok'}">${late ? 'באיחור' : 'בזמן'}</span></td>
           <td><button class="btn btn-danger delete-btn" data-id="${item.id}">מחק</button></td>
@@ -142,6 +142,7 @@
       const offset = i < 7 ? 4 + i : i - 6;
       samples.push({
         submitterName: names[i],
+        submitterEmail: window.auth.currentUser.email,
         courseName: courses[i % courses.length],
         courseDate: dateStr(offset),
         startTime: i % 2 === 0 ? '08:00' : '13:00',

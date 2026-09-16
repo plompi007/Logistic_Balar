@@ -2,8 +2,11 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /submissions/{submissionId} {
-      // כל אחד יכול להגיש דרישה חדשה (הטופס הציבורי), בכפוף לשדות חובה בסיסיים.
-      allow create: if request.resource.data.courseName is string
+      // כל משתמש שמחובר עם Google יכול להגיש דרישה חדשה (הטופס הציבורי מחייב התחברות),
+      // בכפוף לשדות חובה בסיסיים, וש-submitterEmail תואם את המשתמש המחובר בפועל.
+      allow create: if request.auth != null
+        && request.resource.data.submitterEmail == request.auth.token.email
+        && request.resource.data.courseName is string
         && request.resource.data.courseName.size() > 0
         && request.resource.data.submitterName is string
         && request.resource.data.submitterName.size() > 0

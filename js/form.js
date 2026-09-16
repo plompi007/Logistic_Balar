@@ -1,4 +1,11 @@
 (function () {
+  const loginBox = document.getElementById('loginBox');
+  const formPanel = document.getElementById('formPanel');
+  const loginBtn = document.getElementById('loginBtn');
+  const loginError = document.getElementById('loginError');
+  const logoutLink = document.getElementById('logoutLink');
+  const userEmailLabel = document.getElementById('userEmailLabel');
+
   const form = document.getElementById('reqForm');
   const successMsg = document.getElementById('successMsg');
   const errorMsg = document.getElementById('errorMsg');
@@ -9,6 +16,37 @@
   const courseNameOtherField = document.getElementById('courseNameOtherField');
   const courseNameOther = document.getElementById('courseNameOther');
   const traineesCountSelect = document.getElementById('traineesCount');
+  const submitterNameInput = document.getElementById('submitterName');
+
+  loginBtn.addEventListener('click', async () => {
+    loginError.style.display = 'none';
+    try {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      await window.auth.signInWithPopup(provider);
+    } catch (err) {
+      loginError.textContent = 'התחברות נכשלה: ' + err.message;
+      loginError.style.display = 'block';
+    }
+  });
+
+  logoutLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    window.auth.signOut();
+  });
+
+  window.auth.onAuthStateChanged((user) => {
+    if (user) {
+      loginBox.classList.add('hidden');
+      formPanel.classList.remove('hidden');
+      userEmailLabel.textContent = user.email || '';
+      if (!submitterNameInput.value && user.displayName) {
+        submitterNameInput.value = user.displayName;
+      }
+    } else {
+      loginBox.classList.remove('hidden');
+      formPanel.classList.add('hidden');
+    }
+  });
 
   for (let i = 1; i <= 30; i++) {
     const opt = document.createElement('option');
@@ -57,6 +95,14 @@
     successMsg.style.display = 'none';
     errorMsg.style.display = 'none';
 
+    const currentUser = window.auth.currentUser;
+    if (!currentUser) {
+      errorMsg.textContent = 'יש להתחבר עם Google לפני שליחת הדרישה';
+      errorMsg.style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     const submitterName = document.getElementById('submitterName').value.trim();
     const courseName = courseNameSelect.value === 'אחר'
       ? courseNameOther.value.trim()
@@ -71,6 +117,7 @@
 
     const payload = {
       submitterName,
+      submitterEmail: currentUser.email,
       courseName,
       courseDate,
       startTime: document.getElementById('startTime').value,
