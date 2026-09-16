@@ -15,6 +15,9 @@
   const courseNameOtherField = document.getElementById('courseNameOtherField');
   const courseNameOther = document.getElementById('courseNameOther');
   const traineesCountSelect = document.getElementById('traineesCount');
+  const locationSelect = document.getElementById('location');
+  const locationOtherField = document.getElementById('locationOtherField');
+  const locationOther = document.getElementById('locationOther');
   const submitterNameInput = document.getElementById('submitterName');
 
   loginBtn.addEventListener('click', async () => {
@@ -56,6 +59,10 @@
 
   courseNameSelect.addEventListener('change', () => {
     courseNameOtherField.classList.toggle('hidden', courseNameSelect.value !== 'אחר');
+  });
+
+  locationSelect.addEventListener('change', () => {
+    locationOtherField.classList.toggle('hidden', locationSelect.value !== 'אחר');
   });
 
   const ITEM_OPTIONS = {
@@ -167,6 +174,10 @@
       return;
     }
 
+    const location = locationSelect.value === 'אחר'
+      ? locationOther.value.trim()
+      : locationSelect.value;
+
     const payload = {
       submitterName,
       submitterEmail: currentUser.email,
@@ -175,6 +186,7 @@
       startTime: document.getElementById('startTime').value,
       endTime: document.getElementById('endTime').value,
       traineesCount: document.getElementById('traineesCount').value,
+      location,
       needsClassroom: needsClassroom.checked,
       classroomHours: document.getElementById('classroomHours').value.trim(),
       equipmentItems: collectItems('equipmentItems'),
@@ -196,6 +208,7 @@
       addItemRow('logisticsItems');
       classroomHoursField.classList.add('hidden');
       courseNameOtherField.classList.add('hidden');
+      locationOtherField.classList.add('hidden');
 
       successMsg.style.display = 'block';
       window.scrollTo({ top: 0, behavior: 'smooth' });

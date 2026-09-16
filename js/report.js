@@ -68,10 +68,13 @@
         ['כמות חניכים', escapeHtml(s.traineesCount || '-')],
       ]),
       metaRow([
+        ['מיקום / עמדה', escapeHtml(s.location || '-')],
         ['צורך בכיתה', s.needsClassroom ? 'כן' : 'לא'],
-        ['שעות כיתה', s.needsClassroom ? escapeHtml(s.classroomHours || '-') : '—'],
       ]),
     ];
+    if (s.needsClassroom) {
+      rows.push(metaRow([['שעות כיתה', escapeHtml(s.classroomHours || '-')]]));
+    }
 
     return `
     <section class="card ${late ? 'late' : ''}">
@@ -290,6 +293,7 @@
       emailFieldRow('שם המדריך', escapeHtml(s.submitterName || '-')),
       emailFieldRow('תאריך הקורס', escapeHtml(fmtDateHe(s.courseDate) || s.courseDate || '-')),
       emailFieldRow('שעות הקורס', `${escapeHtml(s.startTime || '-')} - ${escapeHtml(s.endTime || '-')}`),
+      emailFieldRow('מיקום / עמדה', escapeHtml(s.location || '-')),
       emailFieldRow('כמות חניכים', escapeHtml(s.traineesCount || '-')),
       emailFieldRow('צורך בכיתה', s.needsClassroom ? 'כן' : 'לא'),
     ];
@@ -369,6 +373,37 @@
     </table>`;
   }
 
+  // בונה שורת "בשעה X:XX פתיחת עמדות [קורס] ב[מיקום] - [ציוד]" בסגנון לוח המשימות היומי.
+  function scheduleItemsText(items) {
+    const clean = (Array.isArray(items) ? items : []).filter((i) => i && (i.name || '').trim());
+    if (!clean.length) return '';
+    return clean.map((i) => (i.qty && i.qty !== '-' ? `${i.qty} ${i.name}` : i.name)).join(', ');
+  }
+
+  function emailScheduleRow(s) {
+    const time = s.startTime || '--:--';
+    const loc = s.location ? ` ב${s.location}` : '';
+    const items = scheduleItemsText(s.logisticsItems);
+    const itemsPart = items ? ` - ${items}` : '';
+    return `<tr><td style="padding:6px 0;border-bottom:1px solid #e6e9f0;font-size:13px;color:#1a2233;" valign="top">
+      <span style="font-weight:bold;color:#3457d5;">בשעה ${escapeHtml(time)}</span>
+      פתיחת עמדות <span style="font-weight:bold;">${escapeHtml(s.courseName || '')}</span>${escapeHtml(loc)}${escapeHtml(itemsPart)}
+    </td></tr>`;
+  }
+
+  function buildMorningScheduleSection(submissions) {
+    const withTime = submissions.filter((s) => s.startTime);
+    if (!withTime.length) return '';
+    const sorted = [...withTime].sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
+    const rows = sorted.map(emailScheduleRow).join('');
+    return `<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom:16px;border:1px solid #e6e9f0;border-radius:8px;overflow:hidden;">
+      <tr><td style="padding:16px 20px;background:#ffffff;">
+        <div style="font-size:15px;font-weight:bold;color:#1a2233;margin-bottom:8px;">לוח פתיחת עמדות - בוקר</div>
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">${rows}</table>
+      </td></tr>
+    </table>`;
+  }
+
   function buildEmailHtml(submissions, { title } = {}) {
     const sorted = [...submissions].sort((a, b) => {
       const da = `${a.courseDate || ''}T${a.startTime || '00:00'}`;
@@ -377,6 +412,7 @@
     });
     const lateCount = sorted.filter(isLate).length;
     const generatedAt = fmtDateTimeHe(new Date());
+    const scheduleHtml = buildMorningScheduleSection(sorted);
     const body = sorted.length
       ? sorted.map((s, i) => emailSubmissionBlock(s, i + 1)).join('')
       : `<div style="text-align:center;color:#667085;padding:20px;font-size:13px;">אין דרישות להצגה</div>`;
@@ -410,6 +446,7 @@
             <span style="display:inline-block;background:#fdeaee;color:#d5384f;font-size:12px;font-weight:bold;padding:4px 12px;border-radius:999px;margin:0 4px;">הוגשו באיחור: ${lateCount}</span>
           </div>
         </td></tr>
+        <tr><td>${scheduleHtml}</td></tr>
         <tr><td>${body}</td></tr>
         <tr><td>${summaryHtml}</td></tr>
       </table>

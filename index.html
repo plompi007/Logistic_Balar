@@ -83,6 +83,24 @@
           <input type="time" id="endTime" name="endTime">
         </div>
       </div>
+      <div class="field">
+        <label for="location">מיקום / עמדה</label>
+        <select id="location" name="location">
+          <option value="" selected>בחר/י מיקום...</option>
+          <option value="מנחת 1">מנחת 1</option>
+          <option value="מטיס 1">מטיס 1</option>
+          <option value="מטיס 3">מטיס 3</option>
+          <option value="חורשת לשבייה">חורשת לשבייה</option>
+          <option value="מטווח 10">מטווח 10</option>
+          <option value="בארי">בארי</option>
+          <option value="דלקייה">דלקייה</option>
+          <option value="אחר">אחר</option>
+        </select>
+      </div>
+      <div class="field hidden" id="locationOtherField">
+        <label for="locationOther">מיקום (אחר)</label>
+        <input type="text" id="locationOther" name="locationOther" placeholder="נא לפרט את המיקום">
+      </div>
       <div class="field checkbox-field">
         <input type="checkbox" id="needsClassroom" name="needsClassroom">
         <label for="needsClassroom">יש צורך בכיתה</label>
