@@ -383,7 +383,8 @@
   function emailScheduleRow(s) {
     const time = s.startTime || '--:--';
     const loc = s.location ? ` ב${s.location}` : '';
-    const items = scheduleItemsText(s.logisticsItems);
+    const allItems = [...(Array.isArray(s.equipmentItems) ? s.equipmentItems : []), ...(Array.isArray(s.logisticsItems) ? s.logisticsItems : [])];
+    const items = scheduleItemsText(allItems);
     const itemsPart = items ? ` - ${items}` : '';
     return `<tr><td style="padding:6px 0;border-bottom:1px solid #e6e9f0;font-size:13px;color:#1a2233;" valign="top">
       <span style="font-weight:bold;color:#3457d5;">בשעה ${escapeHtml(time)}</span>
