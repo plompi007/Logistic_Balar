@@ -105,9 +105,15 @@
         <input type="checkbox" id="needsClassroom" name="needsClassroom">
         <label for="needsClassroom">יש צורך בכיתה</label>
       </div>
-      <div class="field hidden" id="classroomHoursField">
-        <label for="classroomHours">שעות כיתה</label>
-        <input type="text" id="classroomHours" name="classroomHours" placeholder="לדוגמה: 08:00-10:00">
+      <div class="row hidden" id="classroomHoursField">
+        <div class="field">
+          <label for="classroomStartTime">שעת התחלת כיתה</label>
+          <input type="time" id="classroomStartTime" name="classroomStartTime">
+        </div>
+        <div class="field">
+          <label for="classroomEndTime">שעת סיום כיתה</label>
+          <input type="time" id="classroomEndTime" name="classroomEndTime">
+        </div>
       </div>
     </fieldset>
 

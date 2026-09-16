@@ -181,6 +181,12 @@
       ? locationOther.value.trim()
       : locationSelect.value;
 
+    const classroomStartTime = document.getElementById('classroomStartTime').value;
+    const classroomEndTime = document.getElementById('classroomEndTime').value;
+    const classroomHours = classroomStartTime && classroomEndTime
+      ? `${classroomStartTime}-${classroomEndTime}`
+      : (classroomStartTime || classroomEndTime || '');
+
     const payload = {
       submitterName,
       submitterEmail: currentUser.email,
@@ -191,7 +197,7 @@
       traineesCount: document.getElementById('traineesCount').value,
       location,
       needsClassroom: needsClassroom.checked,
-      classroomHours: document.getElementById('classroomHours').value.trim(),
+      classroomHours,
       equipmentItems: collectItems('equipmentItems'),
       logisticsItems: collectItems('logisticsItems'),
       notes: document.getElementById('notes').value.trim(),
