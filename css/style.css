@@ -118,15 +118,20 @@ input[type="date"], input[type="time"] { color-scheme: dark; }
 .checkbox-field { flex-direction: row; align-items: center; gap: 10px; }
 .checkbox-field input { width: 18px; height: 18px; accent-color: var(--primary); }
 
-.item-row { margin-bottom: 8px; }
-.item-row-main {
+.item-row {
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.item-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.item-row .item-name-select { width: 100%; margin-bottom: 8px; }
+.item-name-other { margin-bottom: 8px; }
+.item-row-qty-line {
   display: flex;
   gap: 8px;
   align-items: center;
 }
-.item-row-main .item-name-select { flex: 2; }
-.item-row-main .item-qty { flex: 1; }
-.item-name-other { margin-top: 6px; }
+.item-row-qty-line .item-qty { flex: 1; }
 
 .btn {
   cursor: pointer;

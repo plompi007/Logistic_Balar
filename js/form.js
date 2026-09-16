@@ -67,11 +67,14 @@
 
   const ITEM_OPTIONS = {
     equipmentItems: [
-      'איבו', 'אטטי', 'אלפא', 'אנטנת הרחקה', 'בומרנג', 'מתקן הטלה',
+      'איבו', 'אטטי', 'אלפא', 'אנטנת הרחקה',
+      'מתקן הטלה כדור ברזל', 'מתקן הטלה בומרנג', 'חימושים בומרנג',
       'תיק הטלות שחור', 'תיק הטלות חום', 'אולרים', 'ערכת עטלף',
       'פליקן מטיס 3', 'פליקן לוס', 'פליקן B1', 'פליקן B2', 'פליקן C2',
-      'בלוטי', 'פקפק', 'מב"ן חישה', 'רינג', 'עין הבשור', 'פיש',
-      'מגן שמיים', 'בני', 'אחר',
+      'פלייקארט 100', 'פלייקארט 30',
+      'בלוטי', 'בלואטי', 'פקפק', 'מב"ן חישה', 'רינג', 'עין הבשור', 'פיש',
+      'מגן שמיים', 'בני', 'סוללות איבו', 'סוללות אלפא',
+      'סלייב', 'כבל מאריך', 'מפצל', 'אחר',
     ],
     logisticsItems: ['כיסאות', 'שולחנות', 'תרמוקן', 'משטח הנחתה', 'פאוור בנק', 'אחר'],
   };
@@ -117,10 +120,10 @@
       otherInput.classList.toggle('hidden', select.value !== 'אחר');
     });
 
-    const mainLine = document.createElement('div');
-    mainLine.className = 'item-row-main';
-    mainLine.append(select, qtyInput, removeBtn);
-    row.append(mainLine, otherInput);
+    const qtyLine = document.createElement('div');
+    qtyLine.className = 'item-row-qty-line';
+    qtyLine.append(qtyInput, removeBtn);
+    row.append(select, otherInput, qtyLine);
     container.appendChild(row);
   }
 
