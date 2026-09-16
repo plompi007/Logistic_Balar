@@ -7,6 +7,7 @@
     "send-email-report": "node scripts/send-email-report.js"
   },
   "dependencies": {
+    "@google-cloud/firestore": "^9.1.0",
     "firebase-admin": "^14.4.0",
     "nodemailer": "^10.0.10"
   },
