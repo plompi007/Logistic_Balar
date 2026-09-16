@@ -260,5 +260,109 @@
 </html>`;
   }
 
-  return { buildReportHtml, isLate, deadlineFor };
+  // גרסה מיוחדת לשליחה במייל: לקוחות מייל (Gmail וכו') לא תומכים ב-CSS variables, גופנים
+  // חיצוניים, grid/flex או <style> מורכב - לכן זו טבלת HTML פשוטה עם עיצוב inline בלבד.
+  function emailFieldRow(label, value) {
+    return `<tr>
+      <td style="padding:6px 0;border-bottom:1px solid #e6e9f0;font-size:13px;color:#667085;width:120px;white-space:nowrap;" valign="top">${escapeHtml(label)}</td>
+      <td style="padding:6px 0;border-bottom:1px solid #e6e9f0;font-size:13px;color:#1a2233;" valign="top">${value}</td>
+    </tr>`;
+  }
+
+  function emailItemsBlock(title, items) {
+    const clean = (Array.isArray(items) ? items : []).filter((i) => i && (i.name || '').trim());
+    const rows = clean.length
+      ? clean.map((i) => `<div style="padding:2px 0;font-size:13px;color:#1a2233;">• ${escapeHtml(i.name)} <span style="color:#3457d5;">(כמות: ${escapeHtml(i.qty || '-')})</span></div>`).join('')
+      : `<div style="font-size:13px;color:#9ca3af;">לא צוין</div>`;
+    return `<div style="margin-top:12px;">
+      <div style="font-size:13px;font-weight:bold;color:#3457d5;margin-bottom:4px;">${escapeHtml(title)}</div>
+      ${rows}
+    </div>`;
+  }
+
+  function emailSubmissionBlock(s, index) {
+    const late = isLate(s);
+    const statusColor = late ? '#d5384f' : '#0f9d68';
+    const statusBg = late ? '#fdeaee' : '#e5f7ef';
+    const statusText = late ? '⚠ הוגש באיחור' : '✓ הוגש בזמן';
+
+    const metaRows = [
+      emailFieldRow('שם המדריך', escapeHtml(s.submitterName || '-')),
+      emailFieldRow('תאריך הקורס', escapeHtml(fmtDateHe(s.courseDate) || s.courseDate || '-')),
+      emailFieldRow('שעות הקורס', `${escapeHtml(s.startTime || '-')} - ${escapeHtml(s.endTime || '-')}`),
+      emailFieldRow('כמות חניכים', escapeHtml(s.traineesCount || '-')),
+      emailFieldRow('צורך בכיתה', s.needsClassroom ? 'כן' : 'לא'),
+    ];
+    if (s.needsClassroom) {
+      metaRows.push(emailFieldRow('שעות כיתה', escapeHtml(s.classroomHours || '-')));
+    }
+
+    return `
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom:16px;border:1px solid #e6e9f0;border-radius:8px;overflow:hidden;">
+      <tr><td style="background:${statusColor};height:4px;line-height:4px;font-size:0;">&nbsp;</td></tr>
+      <tr><td style="padding:16px 20px;background:#ffffff;">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+          <tr>
+            <td style="font-size:16px;font-weight:bold;color:#1a2233;">${index}. ${escapeHtml(s.courseName || '(ללא שם קורס)')}</td>
+            <td align="left" style="white-space:nowrap;">
+              <span style="display:inline-block;font-size:12px;font-weight:bold;color:${statusColor};background:${statusBg};padding:4px 10px;border-radius:999px;">${statusText}</span>
+            </td>
+          </tr>
+        </table>
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:10px;">
+          ${metaRows.join('')}
+        </table>
+        ${emailItemsBlock('אמל"ח נדרש', s.equipmentItems)}
+        ${emailItemsBlock('ציוד לוגיסטי נדרש', s.logisticsItems)}
+        ${s.notes ? `<div style="margin-top:12px;padding-top:12px;border-top:1px solid #e6e9f0;">
+          <div style="font-size:13px;font-weight:bold;color:#3457d5;margin-bottom:4px;">הערות</div>
+          <div style="font-size:13px;color:#1a2233;">${escapeHtml(s.notes)}</div>
+        </div>` : ''}
+        <div style="margin-top:12px;font-size:11px;color:#9ca3af;">הוגש בתאריך: ${escapeHtml(fmtDateTimeHe(s.submittedAt))}</div>
+      </td></tr>
+    </table>`;
+  }
+
+  function buildEmailHtml(submissions, { title } = {}) {
+    const sorted = [...submissions].sort((a, b) => {
+      const da = `${a.courseDate || ''}T${a.startTime || '00:00'}`;
+      const db = `${b.courseDate || ''}T${b.startTime || '00:00'}`;
+      return da.localeCompare(db);
+    });
+    const lateCount = sorted.filter(isLate).length;
+    const generatedAt = fmtDateTimeHe(new Date());
+    const body = sorted.length
+      ? sorted.map((s, i) => emailSubmissionBlock(s, i + 1)).join('')
+      : `<div style="text-align:center;color:#667085;padding:20px;font-size:13px;">אין דרישות להצגה</div>`;
+
+    return `<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<title>${escapeHtml(title || 'דוח דרישות לוגיסטיות')}</title>
+</head>
+<body style="margin:0;padding:0;background:#eef1f7;" dir="rtl">
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#eef1f7;">
+    <tr><td align="center" style="padding:24px 12px;">
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;font-family:Arial,Helvetica,sans-serif;">
+        <tr><td style="text-align:center;padding-bottom:20px;">
+          <div style="font-size:20px;font-weight:bold;color:#3457d5;">${escapeHtml(title || 'דוח דרישות לוגיסטיות')}</div>
+          <div style="font-size:12px;color:#667085;margin-top:4px;">נוצר בתאריך: ${generatedAt}</div>
+          <div style="margin-top:10px;">
+            <span style="display:inline-block;background:#eaf0ff;color:#3457d5;font-size:12px;font-weight:bold;padding:4px 12px;border-radius:999px;margin:0 4px;">סה"כ דרישות: ${sorted.length}</span>
+            <span style="display:inline-block;background:#fdeaee;color:#d5384f;font-size:12px;font-weight:bold;padding:4px 12px;border-radius:999px;margin:0 4px;">הוגשו באיחור: ${lateCount}</span>
+          </div>
+        </td></tr>
+        <tr><td>${body}</td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+  }
+
+  return { buildReportHtml, buildEmailHtml, isLate, deadlineFor };
 });
