@@ -63,7 +63,7 @@
       : courseNameSelect.value;
     const courseDate = document.getElementById('courseDate').value;
     if (!submitterName || !courseName || !courseDate) {
-      errorMsg.textContent = 'יש למלא שם מגיש, שם קורס ותאריך קורס';
+      errorMsg.textContent = 'יש למלא שם מדריך, שם קורס ותאריך קורס';
       errorMsg.style.display = 'block';
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;

@@ -53,7 +53,7 @@ window.LogisticReport = (function () {
         </div>
       </header>
       <div class="grid">
-        <div><strong>מגיש הדרישה:</strong> ${escapeHtml(s.submitterName || '-')}</div>
+        <div><strong>שם המדריך:</strong> ${escapeHtml(s.submitterName || '-')}</div>
         <div><strong>תאריך הקורס:</strong> ${escapeHtml(fmtDateHe(s.courseDate) || s.courseDate || '-')}</div>
         <div><strong>שעת פתיחה:</strong> ${escapeHtml(s.startTime || '-')}</div>
         <div><strong>שעת סיום:</strong> ${escapeHtml(s.endTime || '-')}</div>

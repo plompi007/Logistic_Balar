@@ -79,7 +79,7 @@
       .join('');
     tableWrap.innerHTML = `<table>
       <thead><tr>
-        <th>קורס</th><th>תאריך</th><th>שעות</th><th>מגיש</th><th>חניכים</th><th>סטטוס</th><th></th>
+        <th>קורס</th><th>תאריך</th><th>שעות</th><th>מדריך</th><th>חניכים</th><th>סטטוס</th><th></th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
