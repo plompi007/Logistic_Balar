@@ -11,6 +11,13 @@
   const exportBtn = document.getElementById('exportBtn');
   const refreshBtn = document.getElementById('refreshBtn');
   const tableWrap = document.getElementById('tableWrap');
+  const seedBtn = document.getElementById('seedBtn');
+  const clearSeedBtn = document.getElementById('clearSeedBtn');
+
+  if (new URLSearchParams(location.search).get('seed') === '1') {
+    seedBtn.classList.remove('hidden');
+    clearSeedBtn.classList.remove('hidden');
+  }
 
   let allSubmissions = [];
 
@@ -115,6 +122,77 @@
   });
   refreshBtn.addEventListener('click', loadSubmissions);
   filterDate.addEventListener('change', applyFilter);
+
+  function dateStr(offsetDays) {
+    const d = new Date();
+    d.setDate(d.getDate() + offsetDays);
+    return d.toISOString().slice(0, 10);
+  }
+
+  function buildSampleSubmissions() {
+    const courses = ['אווטה', 'פלייקארט', 'FPV', 'הגנמי'];
+    const names = ['דני כהן', 'יעל לוי', 'עומר ביטון', 'שירה מזרחי', 'אורי גל', 'נועה שרון', 'תומר אשכנזי', 'רותם פרץ', 'איתי נחום', 'מאיה גורן'];
+    const equipmentPool = [['נשק אישי', '25'], ['אפודי מגן', '25'], ['קסדות', '15'], ['משקפי ראיית לילה', '5']];
+    const logisticsPool = [['בקבוקי מים', '50'], ['שולחנות', '4'], ['כיסאות', '20'], ['מטען ניידים', '3']];
+    const notesPool = ['נא לוודא זמינות מוקדם', 'קבוצה גדולה, יש להיערך בהתאם', ''];
+
+    const samples = [];
+    for (let i = 0; i < 10; i++) {
+      // 7 ראשונות בעוד כמה ימים (בזמן), 3 אחרונות היום/מחר (יוצג כ"באיחור" כי המועד כבר עבר)
+      const offset = i < 7 ? 4 + i : i - 6;
+      samples.push({
+        submitterName: names[i],
+        courseName: courses[i % courses.length],
+        courseDate: dateStr(offset),
+        startTime: i % 2 === 0 ? '08:00' : '13:00',
+        endTime: i % 2 === 0 ? '12:00' : '17:00',
+        traineesCount: String(5 + i * 2),
+        needsClassroom: i % 2 === 0,
+        classroomHours: i % 2 === 0 ? '08:00-09:00' : '',
+        equipmentItems: [equipmentPool[i % equipmentPool.length]].map(([name, qty]) => ({ name, qty })),
+        logisticsItems: [logisticsPool[i % logisticsPool.length]].map(([name, qty]) => ({ name, qty })),
+        notes: notesPool[i % notesPool.length],
+        sample: true,
+        submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+    return samples;
+  }
+
+  seedBtn.addEventListener('click', async () => {
+    seedBtn.disabled = true;
+    seedBtn.textContent = 'יוצר...';
+    try {
+      const batch = window.db.batch();
+      buildSampleSubmissions().forEach((s) => {
+        batch.set(window.db.collection('submissions').doc(), s);
+      });
+      await batch.commit();
+      await loadSubmissions();
+      alert('נוצרו 10 דרישות לדוגמה. אפשר עכשיו ללחוץ על "ייצוא דוח מסודר" כדי לראות איך זה נראה.');
+    } catch (err) {
+      alert('שגיאה ביצירת דוגמאות: ' + err.message);
+    } finally {
+      seedBtn.disabled = false;
+      seedBtn.textContent = 'צור 10 דרישות לדוגמה';
+    }
+  });
+
+  clearSeedBtn.addEventListener('click', async () => {
+    if (!confirm('למחוק את כל דרישות הדוגמה (sample=true)?')) return;
+    clearSeedBtn.disabled = true;
+    try {
+      const snapshot = await window.db.collection('submissions').where('sample', '==', true).get();
+      const batch = window.db.batch();
+      snapshot.docs.forEach((doc) => batch.delete(doc.ref));
+      await batch.commit();
+      await loadSubmissions();
+    } catch (err) {
+      alert('שגיאה במחיקת דוגמאות: ' + err.message);
+    } finally {
+      clearSeedBtn.disabled = false;
+    }
+  });
 
   exportBtn.addEventListener('click', () => {
     const items = filterDate.value
