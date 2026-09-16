@@ -35,42 +35,62 @@ window.LogisticReport = (function () {
   }
 
   function itemsList(items) {
-    if (!Array.isArray(items) || items.length === 0) return '<p class="empty">לא צוין</p>';
-    return `<ul>${items
-      .filter((i) => i && (i.name || '').trim())
-      .map((i) => `<li><span class="item-name">${escapeHtml(i.name)}</span><span class="item-qty">כמות: ${escapeHtml(i.qty || '-')}</span></li>`)
+    const clean = (Array.isArray(items) ? items : []).filter((i) => i && (i.name || '').trim());
+    if (clean.length === 0) return '<p class="empty">לא צוין</p>';
+    return `<ul>${clean
+      .map((i) => `<li><span class="item-dot"></span><span class="item-name">${escapeHtml(i.name)}</span><span class="item-qty">${escapeHtml(i.qty || '-')}</span></li>`)
       .join('')}</ul>`;
   }
 
-  function submissionCard(s) {
+  function metaRow(pairs) {
+    return `<tr>${pairs
+      .map(([label, value]) => `<th>${escapeHtml(label)}</th><td>${value}</td>`)
+      .join('')}</tr>`;
+  }
+
+  function submissionCard(s, index) {
     const late = isLate(s);
+    const rows = [
+      metaRow([
+        ['שם המדריך', escapeHtml(s.submitterName || '-')],
+        ['תאריך הקורס', escapeHtml(fmtDateHe(s.courseDate) || s.courseDate || '-')],
+      ]),
+      metaRow([
+        ['שעות הקורס', `${escapeHtml(s.startTime || '-')} – ${escapeHtml(s.endTime || '-')}`],
+        ['כמות חניכים', escapeHtml(s.traineesCount || '-')],
+      ]),
+      metaRow([
+        ['צורך בכיתה', s.needsClassroom ? 'כן' : 'לא'],
+        ['שעות כיתה', s.needsClassroom ? escapeHtml(s.classroomHours || '-') : '—'],
+      ]),
+    ];
+
     return `
     <section class="card ${late ? 'late' : ''}">
       <header class="card-header">
-        <h2>${escapeHtml(s.courseName || '(ללא שם קורס)')}</h2>
-        <div class="badges">
-          ${late ? '<span class="badge badge-late">הוגש באיחור</span>' : '<span class="badge badge-ok">הוגש בזמן</span>'}
+        <div class="card-title">
+          <span class="card-index">${index}</span>
+          <h2>${escapeHtml(s.courseName || '(ללא שם קורס)')}</h2>
         </div>
+        ${late ? '<span class="badge badge-late">⚠ הוגש באיחור</span>' : '<span class="badge badge-ok">✓ הוגש בזמן</span>'}
       </header>
-      <div class="grid">
-        <div><strong>שם המדריך:</strong> ${escapeHtml(s.submitterName || '-')}</div>
-        <div><strong>תאריך הקורס:</strong> ${escapeHtml(fmtDateHe(s.courseDate) || s.courseDate || '-')}</div>
-        <div><strong>שעת פתיחה:</strong> ${escapeHtml(s.startTime || '-')}</div>
-        <div><strong>שעת סיום:</strong> ${escapeHtml(s.endTime || '-')}</div>
-        <div><strong>כמות חניכים:</strong> ${escapeHtml(s.traineesCount || '-')}</div>
-        <div><strong>צורך בכיתה:</strong> ${s.needsClassroom ? 'כן' : 'לא'}</div>
-        ${s.needsClassroom ? `<div><strong>שעות כיתה:</strong> ${escapeHtml(s.classroomHours || '-')}</div>` : ''}
-        <div><strong>הוגש בתאריך:</strong> ${escapeHtml(fmtDateTimeHe(s.submittedAt))}</div>
+
+      <table class="meta-table">${rows.join('')}</table>
+
+      <div class="items-grid">
+        <div class="section">
+          <h3><span class="section-icon">🛡️</span> אמל"ח נדרש</h3>
+          ${itemsList(s.equipmentItems)}
+        </div>
+        <div class="section">
+          <h3><span class="section-icon">🎒</span> ציוד לוגיסטי נדרש</h3>
+          ${itemsList(s.logisticsItems)}
+        </div>
       </div>
-      <div class="section">
-        <h3>אמל"ח נדרש</h3>
-        ${itemsList(s.equipmentItems)}
-      </div>
-      <div class="section">
-        <h3>ציוד לוגיסטי נדרש</h3>
-        ${itemsList(s.logisticsItems)}
-      </div>
-      ${s.notes ? `<div class="section"><h3>הערות</h3><p>${escapeHtml(s.notes)}</p></div>` : ''}
+
+      ${s.notes ? `<div class="section notes-section"><h3><span class="section-icon">📝</span> הערות</h3><p>${escapeHtml(s.notes)}</p></div>` : ''}
+
+      <footer class="card-footer">הוגש בתאריך: ${escapeHtml(fmtDateTimeHe(s.submittedAt))}</footer>
     </section>`;
   }
 
@@ -87,38 +107,132 @@ window.LogisticReport = (function () {
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${escapeHtml(title || 'דוח דרישות לוגיסטיות')}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root { color-scheme: light; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; background:#f4f6f8; margin:0; padding:24px; color:#1f2937; }
-  .report-header { max-width: 900px; margin: 0 auto 24px; }
-  .report-header h1 { margin:0 0 4px; font-size: 1.6rem; }
-  .report-meta { color:#6b7280; font-size: 0.9rem; }
-  .summary { display:flex; gap:16px; margin-top:12px; flex-wrap: wrap; }
-  .summary .pill { background:#e5e7eb; padding:6px 14px; border-radius: 999px; font-size: 0.85rem; }
-  .summary .pill.late { background:#fee2e2; color:#991b1b; }
-  main { max-width: 900px; margin: 0 auto; display:flex; flex-direction:column; gap:16px; }
-  .card { background:#fff; border-radius:12px; padding:18px 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-inline-start: 5px solid #10b981; }
-  .card.late { border-inline-start-color:#ef4444; }
-  .card-header { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap: wrap; }
-  .card-header h2 { margin:0; font-size:1.2rem; }
-  .badge { font-size:0.75rem; padding:4px 10px; border-radius:999px; font-weight:600; }
-  .badge-ok { background:#d1fae5; color:#065f46; }
-  .badge-late { background:#fee2e2; color:#991b1b; }
-  .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap:8px 16px; margin:14px 0; font-size:0.92rem; }
-  .section { margin-top:12px; padding-top:10px; border-top:1px solid #e5e7eb; }
-  .section h3 { margin:0 0 6px; font-size:0.95rem; color:#374151; }
-  ul { margin:0; padding-inline-start: 20px; }
-  li { display:flex; justify-content:space-between; gap:12px; padding:2px 0; }
-  .item-qty { color:#6b7280; white-space:nowrap; }
-  .empty { color:#9ca3af; margin:0; }
-  @media print {
-    body { background:#fff; padding:0; }
-    .card { box-shadow:none; border:1px solid #e5e7eb; break-inside: avoid; }
-    .no-print { display:none; }
+  :root {
+    color-scheme: light;
+    --accent: #3457d5;
+    --accent-soft: #eaf0ff;
+    --ok: #0f9d68;
+    --ok-soft: #e5f7ef;
+    --late: #d5384f;
+    --late-soft: #fdeaee;
+    --text: #1a2233;
+    --muted: #667085;
+    --border: #e6e9f0;
   }
-  .no-print { max-width:900px; margin: 0 auto 16px; text-align:left; }
-  .no-print button { background:#2563eb; color:#fff; border:none; padding:8px 16px; border-radius:8px; cursor:pointer; font-size:0.9rem; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Heebo', 'Segoe UI', Arial, sans-serif;
+    background: #eef1f7;
+    margin: 0;
+    padding: 32px 16px 60px;
+    color: var(--text);
+  }
+  .report-header {
+    max-width: 880px;
+    margin: 0 auto 28px;
+    text-align: center;
+  }
+  .report-header h1 { margin: 0 0 6px; font-size: 1.8rem; font-weight: 800; color: var(--accent); }
+  .report-meta { color: var(--muted); font-size: 0.9rem; }
+  .summary { display: flex; justify-content: center; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
+  .summary .pill { background: var(--accent-soft); color: var(--accent); padding: 6px 16px; border-radius: 999px; font-size: 0.85rem; font-weight: 600; }
+  .summary .pill.late { background: var(--late-soft); color: var(--late); }
+  main { max-width: 880px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(20, 30, 60, 0.07);
+    border: 1px solid var(--border);
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 16px 22px;
+    background: var(--accent-soft);
+    border-bottom: 3px solid var(--accent);
+  }
+  .card.late .card-header { background: var(--late-soft); border-bottom-color: var(--late); }
+  .card-title { display: flex; align-items: center; gap: 10px; }
+  .card-index {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--accent); color: #fff; font-size: 0.8rem; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .card.late .card-index { background: var(--late); }
+  .card-header h2 { margin: 0; font-size: 1.25rem; font-weight: 700; }
+  .badge { font-size: 0.78rem; padding: 5px 12px; border-radius: 999px; font-weight: 700; white-space: nowrap; }
+  .badge-ok { background: var(--ok-soft); color: var(--ok); }
+  .badge-late { background: var(--late-soft); color: var(--late); border: 1px solid var(--late); }
+
+  .meta-table { width: 100%; border-collapse: collapse; }
+  .meta-table tr { border-bottom: 1px solid var(--border); }
+  .meta-table tr:last-child { border-bottom: none; }
+  .meta-table th, .meta-table td {
+    text-align: right;
+    padding: 10px 22px;
+    font-size: 0.92rem;
+    font-weight: 400;
+    width: 25%;
+  }
+  .meta-table th { color: var(--muted); font-weight: 600; white-space: nowrap; }
+  .meta-table td { color: var(--text); font-weight: 500; }
+
+  .items-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border-top: 1px solid var(--border);
+  }
+  .section { padding: 16px 22px; }
+  .items-grid .section:first-child { border-inline-end: 1px solid var(--border); }
+  .section h3 {
+    margin: 0 0 10px; font-size: 0.9rem; font-weight: 700; color: var(--accent);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .section-icon { font-size: 1rem; }
+  ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  li { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
+  .item-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+  .item-name { flex: 1; }
+  .item-qty {
+    color: var(--accent); background: var(--accent-soft); font-weight: 700;
+    font-size: 0.78rem; padding: 2px 9px; border-radius: 999px; white-space: nowrap;
+  }
+  .empty { color: #9ca3af; margin: 0; font-size: 0.88rem; }
+  .notes-section { border-top: 1px solid var(--border); }
+  .notes-section p { margin: 0; font-size: 0.9rem; color: var(--text); line-height: 1.5; }
+  .card-footer {
+    padding: 10px 22px; font-size: 0.78rem; color: var(--muted);
+    background: #fafbfd; border-top: 1px solid var(--border);
+  }
+
+  @media (max-width: 560px) {
+    .meta-table th, .meta-table td { padding: 8px 14px; font-size: 0.85rem; }
+    .items-grid { grid-template-columns: 1fr; }
+    .items-grid .section:first-child { border-inline-end: none; border-bottom: 1px solid var(--border); }
+  }
+  @media print {
+    body { background: #fff; padding: 0; }
+    .card { box-shadow: none; break-inside: avoid; }
+    .no-print { display: none; }
+  }
+  .no-print { max-width: 880px; margin: 0 auto 20px; text-align: left; }
+  .no-print button {
+    background: var(--accent); color: #fff; border: none; padding: 10px 20px;
+    border-radius: 10px; cursor: pointer; font-size: 0.9rem; font-weight: 600; font-family: inherit;
+  }
 </style>
 </head>
 <body>
@@ -132,7 +246,7 @@ window.LogisticReport = (function () {
     </div>
   </div>
   <main>
-    ${sorted.length ? sorted.map(submissionCard).join('') : '<p style="text-align:center;color:#6b7280;">אין דרישות להצגה</p>'}
+    ${sorted.length ? sorted.map((s, i) => submissionCard(s, i + 1)).join('') : '<p style="text-align:center;color:#6b7280;">אין דרישות להצגה</p>'}
   </main>
 </body>
 </html>`;
