@@ -1,12 +1,14 @@
 {
   "name": "logistic-balar",
   "private": true,
-  "description": "סקריפט תזמון לשליחת דוח WhatsApp יומי (רץ ב-GitHub Actions בלבד - האתר עצמו סטטי לחלוטין)",
+  "description": "סקריפטי תזמון לשליחת דוחות יומיים (WhatsApp + מייל) - רצים ב-GitHub Actions בלבד, האתר עצמו סטטי לחלוטין",
   "scripts": {
-    "send-whatsapp-report": "node scripts/send-whatsapp-report.js"
+    "send-whatsapp-report": "node scripts/send-whatsapp-report.js",
+    "send-email-report": "node scripts/send-email-report.js"
   },
   "dependencies": {
-    "firebase-admin": "^14.4.0"
+    "firebase-admin": "^14.4.0",
+    "nodemailer": "^10.0.10"
   },
   "engines": {
     "node": ">=20"

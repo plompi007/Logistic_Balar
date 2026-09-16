@@ -89,6 +89,41 @@ New repository secret):
 הסקריפט עצמו נמצא ב-[`scripts/send-whatsapp-report.js`](scripts/send-whatsapp-report.js),
 וה-workflow שמתזמן אותו ב-[`.github/workflows/whatsapp-daily-report.yml`](.github/workflows/whatsapp-daily-report.yml).
 
+## הקמה חד-פעמית - דוח מייל יומי (אופציונלי)
+
+באותו רעיון בדיוק, אבל דרך אימייל במקום WhatsApp - רץ ב-18:00 שעון ישראל, ושולח **את אותו
+דוח מעוצב שרואים באתר** (כרטיסים, סטטוס בזמן/באיחור וכו') ישירות כגוף המייל. בברירת מחדל
+נשלח ל-`yonatan1279@gmail.com`, וניתן לשנות כתובת יעד בלי לגעת בקוד (ראו טבלה למטה).
+
+השליחה היא דרך Gmail עצמו (SMTP רגיל עם "סיסמת אפליקציה"), חינמי ורשמי לגמרי - לא דרך שירות
+צד-שלישי לא רשמי.
+
+**שלב 1 - סיסמת אפליקציה ל-Gmail** (מהחשבון שממנו רוצים לשלוח, למשל `nohar.tzur@gmail.com`):
+1. לוודא שיש **אימות דו-שלבי (2-Step Verification)** פעיל בחשבון - בלי זה אי אפשר ליצור סיסמת
+   אפליקציה. אם לא מופעל: [myaccount.google.com/security](https://myaccount.google.com/security)
+   → Sign in to Google → 2-Step Verification → Get started.
+2. להיכנס ל-[myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords),
+   לתת שם כלשהו (למשל "Logistic Balar"), וללחוץ Create. מתקבל קוד בן 16 תווים - זו סיסמת
+   האפליקציה (שונה מהסיסמה הרגילה של Gmail).
+
+**שלב 2 - הוספת Secrets בריפו ב-GitHub** (Settings → Secrets and variables → Actions →
+New repository secret):
+
+| שם ה-secret | ערך |
+|---|---|
+| `FIREBASE_SERVICE_ACCOUNT` | אותו ערך כמו בדוח ה-WhatsApp למעלה (אם כבר הוגדר, אין צורך לחזור) |
+| `GMAIL_USER` | כתובת ה-Gmail השולחת, למשל `nohar.tzur@gmail.com` |
+| `GMAIL_APP_PASSWORD` | סיסמת האפליקציה בת 16 התווים משלב 1 |
+
+אופציונלי - **Settings → Secrets and variables → Actions → Variables** → New repository
+variable בשם `EMAIL_TO` עם כתובת יעד אחרת, אם רוצים לשנות ממי שמוגדר כברירת מחדל.
+
+זהו - מהיום הבא המייל יישלח אוטומטית כל יום ב-18:00. אפשר גם להריץ ידנית לבדיקה: בטאב
+**Actions** → **Email daily logistics report** → **Run workflow**.
+
+הסקריפט עצמו נמצא ב-[`scripts/send-email-report.js`](scripts/send-email-report.js), וה-workflow
+ב-[`.github/workflows/email-daily-report.yml`](.github/workflows/email-daily-report.yml).
+
 ## הרצה מקומית לבדיקה
 
 אין תהליך build - מספיק שרת קבצים סטטי כלשהו, למשל:
@@ -109,14 +144,18 @@ admin.html                              עמוד הניהול (כניסה מוג
 css/style.css                           עיצוב משותף
 js/form.js                              לוגיקת טופס ההגשה + כתיבה ל-Firestore
 js/admin.js                             התחברות מנהל, טבלת הגשות, מחיקה, ייצוא
-js/report.js                            בניית דוח ה-HTML המודפס (משותף לעמוד הניהול)
+js/report.js                            בניית דוח ה-HTML (עמוד הניהול + גוף המייל היומי) - נטען גם בדפדפן וגם ב-Node
 js/firebase-init.js                     אתחול Firebase SDK
 js/firebase-config.js                   פרטי החיבור לפרויקט Firebase שלכם (יש למלא!)
 firestore.rules                         כללי האבטחה של מסד הנתונים
 firebase.json                           הגדרת CLI לפריסת ה-rules
+scripts/lib/time.js                     עזרי שעון ישראל (משותף לשני הדוחות המתוזמנים)
+scripts/lib/firestore.js                שליפת דרישות "מחר" מ-Firestore דרך Service Account (משותף)
 scripts/send-whatsapp-report.js         שליחת דוח WhatsApp יומי (רץ ב-GitHub Actions בלבד)
+scripts/send-email-report.js            שליחת דוח מייל יומי (רץ ב-GitHub Actions בלבד)
 .github/workflows/whatsapp-daily-report.yml   תזמון ה-cron היומי לדוח ה-WhatsApp
-package.json / package-lock.json        תלות ה-Node היחידה (firebase-admin) לסקריפט ה-WhatsApp
+.github/workflows/email-daily-report.yml      תזמון ה-cron היומי לדוח המייל
+package.json / package-lock.json        תלויות ה-Node (firebase-admin, nodemailer) לסקריפטים המתוזמנים
 ```
 
 **חשוב:** מלבד סקריפט ה-WhatsApp (שרץ רק בתוך GitHub Actions, לא בדפדפן), **האתר עצמו נשאר

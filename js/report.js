@@ -1,5 +1,13 @@
-// בניית דוח HTML מודפס/קריא מתוך רשימת הגשות. נטען גם בעמוד הניהול.
-window.LogisticReport = (function () {
+// בניית דוח HTML מודפס/קריא מתוך רשימת הגשות.
+// נטען גם בעמוד הניהול (דפדפן) וגם בסקריפטים המתוזמנים ב-GitHub Actions (Node).
+(function (root, factory) {
+  const mod = factory();
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = mod;
+  } else {
+    root.LogisticReport = mod;
+  }
+})(typeof window !== 'undefined' ? window : globalThis, function () {
   function escapeHtml(str) {
     return String(str ?? '').replace(/[&<>"']/g, (c) => ({
       '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
@@ -253,4 +261,4 @@ window.LogisticReport = (function () {
   }
 
   return { buildReportHtml, isLate, deadlineFor };
-})();
+});

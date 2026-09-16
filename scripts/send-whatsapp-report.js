@@ -1,45 +1,10 @@
 // שולח סיכום WhatsApp (דרך CallMeBot) עם כל הדרישות שהוגשו לקורסים של מחר.
 // רץ בתוך GitHub Actions (ראו .github/workflows/whatsapp-daily-report.yml).
-const admin = require('firebase-admin');
+const { currentJerusalemHour } = require('./lib/time');
+const { fetchTomorrowSubmissions } = require('./lib/firestore');
+const { isLate } = require('../js/report.js');
 
-const TIMEZONE = 'Asia/Jerusalem';
 const TARGET_HOUR = 15;
-
-function currentJerusalemParts() {
-  const fmt = new Intl.DateTimeFormat('en-US', {
-    timeZone: TIMEZONE,
-    hour: '2-digit',
-    hour12: false,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  });
-  const parts = Object.fromEntries(fmt.formatToParts(new Date()).map((p) => [p.type, p.value]));
-  return { hour: Number(parts.hour), dateStr: `${parts.year}-${parts.month}-${parts.day}` };
-}
-
-function tomorrowJerusalemDateStr() {
-  const now = new Date();
-  const jerusalemNow = new Date(now.toLocaleString('en-US', { timeZone: TIMEZONE }));
-  jerusalemNow.setDate(jerusalemNow.getDate() + 1);
-  const y = jerusalemNow.getFullYear();
-  const m = String(jerusalemNow.getMonth() + 1).padStart(2, '0');
-  const d = String(jerusalemNow.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
-function deadlineFor(courseDate) {
-  if (!courseDate) return null;
-  const d = new Date(`${courseDate}T12:00:00`);
-  d.setDate(d.getDate() - 1);
-  return d;
-}
-
-function isLate(submittedAt, courseDate) {
-  const deadline = deadlineFor(courseDate);
-  if (!deadline || !submittedAt) return false;
-  return new Date(submittedAt) > deadline;
-}
 
 function itemsLine(items) {
   if (!Array.isArray(items) || items.length === 0) return '  לא צוין';
@@ -58,7 +23,7 @@ function buildMessage(courseDateStr, submissions) {
   const sorted = [...submissions].sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
 
   const blocks = sorted.map((s) => {
-    const late = isLate(s.submittedAtIso, s.courseDate);
+    const late = isLate(s);
     return [
       `\n----------------------------`,
       `*${s.courseName || '(ללא שם קורס)'}* ${late ? '⚠️ הוגש באיחור' : '✅ בזמן'}`,
@@ -99,28 +64,13 @@ async function sendWhatsApp(text) {
 }
 
 async function main() {
-  const { hour } = currentJerusalemParts();
+  const hour = currentJerusalemHour();
   if (hour !== TARGET_HOUR && !process.env.FORCE_SEND) {
     console.log(`שעה נוכחית בישראל: ${hour}:00, לא ${TARGET_HOUR}:00 - לא שולח (זה תקין, זו הרצת ה-cron השנייה של אותו יום).`);
     return;
   }
 
-  const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
-  if (!serviceAccountJson) throw new Error('חסר משתנה סביבה FIREBASE_SERVICE_ACCOUNT');
-
-  admin.initializeApp({ credential: admin.credential.cert(JSON.parse(serviceAccountJson)) });
-  const db = admin.firestore();
-
-  const targetDate = tomorrowJerusalemDateStr();
-  const snapshot = await db.collection('submissions').where('courseDate', '==', targetDate).get();
-  const submissions = snapshot.docs.map((doc) => {
-    const data = doc.data();
-    return {
-      ...data,
-      submittedAtIso: data.submittedAt && data.submittedAt.toDate ? data.submittedAt.toDate().toISOString() : null,
-    };
-  });
-
+  const { targetDate, submissions } = await fetchTomorrowSubmissions();
   const message = buildMessage(targetDate, submissions);
   console.log(message);
   await sendWhatsApp(message);
