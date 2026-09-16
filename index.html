@@ -119,9 +119,14 @@
 
     <fieldset>
       <legend>אמל"ח נדרש</legend>
-      <p class="hint">יש לפרט כמות מדוייקת של כלל האמצעים</p>
-      <div id="equipmentItems"></div>
-      <button type="button" class="btn btn-secondary add-item-btn" data-target="equipmentItems">+ הוספת פריט</button>
+      <p class="hint">יש לבחור את כל הפריטים הנדרשים - לחלק מהפריטים תתבקש/י לציין כמות</p>
+      <div id="equipmentGrid" class="item-grid"></div>
+      <div class="field hidden" id="equipmentOtherField">
+        <label for="equipmentOtherName">שם פריט (אחר)</label>
+        <input type="text" id="equipmentOtherName" placeholder="שם הפריט">
+        <label for="equipmentOtherQty" style="margin-top:6px;">כמות (אופציונלי)</label>
+        <input type="text" id="equipmentOtherQty" placeholder="כמות">
+      </div>
     </fieldset>
 
     <fieldset>

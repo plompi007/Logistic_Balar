@@ -66,18 +66,113 @@
   });
 
   const ITEM_OPTIONS = {
-    equipmentItems: [
-      'איבו', 'אטטי', 'אלפא', 'אנטנת הרחקה',
-      'מתקן הטלה כדור ברזל', 'מתקן הטלה בומרנג', 'חימושים בומרנג',
-      'תיק הטלות שחור', 'תיק הטלות חום', 'אולרים', 'ערכת עטלף',
-      'פליקן מטיס 3', 'פליקן לוס', 'פליקן B1', 'פליקן B2', 'פליקן C2',
-      'פלייקארט 100', 'פלייקארט 30',
-      'בלוטי', 'בלואטי', 'פקפק', 'מב"ן חישה', 'רינג', 'עין הבשור', 'פיש',
-      'מגן שמיים', 'בני', 'סוללות איבו', 'סוללות אלפא',
-      'סלייב', 'כבל מאריך', 'מפצל', 'אחר',
-    ],
     logisticsItems: ['כיסאות', 'שולחנות', 'תרמוקן', 'משטח הנחתה', 'פאוור בנק', 'אחר'],
   };
+
+  // אמל"ח: רשת בחירה (צ'יפים) במקום שורות - לרוב הפריטים הכמות לא משנה, רק לחלק
+  // (הפריטים ב-EQUIPMENT_QTY_REQUIRED) מבקשים כמות בפועל.
+  const EQUIPMENT_ITEMS = [
+    'אווטה', 'איבו', 'אטטי', 'אלפא', 'אנטנת הרחקה',
+    'מתקן הטלה כדור ברזל', 'מתקן הטלה בומרנג', 'חימושים בומרנג',
+    'תיק הטלות שחור', 'תיק הטלות חום', 'אולרים', 'ערכת עטלף',
+    'פליקן מטיס 3', 'פליקן לוס', 'פליקן B1', 'פליקן B2', 'פליקן C2',
+    'פלייקארט 100', 'פלייקארט 30',
+    'בלואטי', 'פקפק', 'מב"ן חישה', 'רינג', 'עין הבשור', 'פיש',
+    'מגן שמיים', 'בני', 'סוללות איבו', 'סוללות אלפא',
+    'סלייב', 'כבל מאריך', 'מפצל',
+  ];
+  const EQUIPMENT_QTY_REQUIRED = new Set([
+    'אווטה', 'איבו', 'אלפא', 'אטטי', 'מתקן הטלה כדור ברזל', 'מתקן הטלה בומרנג', 'בלואטי',
+  ]);
+
+  const equipmentGrid = document.getElementById('equipmentGrid');
+  const equipmentOtherField = document.getElementById('equipmentOtherField');
+  const equipmentOtherName = document.getElementById('equipmentOtherName');
+  const equipmentOtherQty = document.getElementById('equipmentOtherQty');
+
+  function buildEquipmentGrid() {
+    EQUIPMENT_ITEMS.forEach((name) => {
+      const chip = document.createElement('div');
+      chip.className = 'item-chip';
+      chip.dataset.name = name;
+
+      const toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'chip-toggle';
+      toggle.textContent = name;
+      chip.appendChild(toggle);
+
+      let qtyInput = null;
+      if (EQUIPMENT_QTY_REQUIRED.has(name)) {
+        qtyInput = document.createElement('input');
+        qtyInput.type = 'text';
+        qtyInput.className = 'chip-qty hidden';
+        qtyInput.placeholder = 'כמות';
+        chip.appendChild(qtyInput);
+      }
+
+      toggle.addEventListener('click', () => {
+        const selected = chip.classList.toggle('selected');
+        if (qtyInput) {
+          qtyInput.classList.toggle('hidden', !selected);
+          if (selected) qtyInput.focus();
+          else qtyInput.value = '';
+        }
+      });
+
+      equipmentGrid.appendChild(chip);
+    });
+
+    const otherChip = document.createElement('div');
+    otherChip.className = 'item-chip';
+    otherChip.dataset.name = 'אחר';
+    const otherToggle = document.createElement('button');
+    otherToggle.type = 'button';
+    otherToggle.className = 'chip-toggle';
+    otherToggle.textContent = 'אחר';
+    otherToggle.addEventListener('click', () => {
+      const selected = otherChip.classList.toggle('selected');
+      equipmentOtherField.classList.toggle('hidden', !selected);
+      if (!selected) {
+        equipmentOtherName.value = '';
+        equipmentOtherQty.value = '';
+      }
+    });
+    otherChip.appendChild(otherToggle);
+    equipmentGrid.appendChild(otherChip);
+  }
+
+  buildEquipmentGrid();
+
+  function collectEquipmentItems() {
+    const items = [];
+    equipmentGrid.querySelectorAll('.item-chip.selected').forEach((chip) => {
+      const name = chip.dataset.name;
+      if (name === 'אחר') {
+        const otherName = equipmentOtherName.value.trim();
+        if (otherName) items.push({ name: otherName, qty: equipmentOtherQty.value.trim() || '-' });
+        return;
+      }
+      const qtyInput = chip.querySelector('.chip-qty');
+      const qty = qtyInput ? qtyInput.value.trim() : '';
+      items.push({ name, qty: qty || '-' });
+    });
+    return items;
+  }
+
+  function resetEquipmentGrid() {
+    equipmentGrid.querySelectorAll('.item-chip').forEach((chip) => {
+      chip.classList.remove('selected');
+      const qtyInput = chip.querySelector('.chip-qty');
+      if (qtyInput) {
+        qtyInput.classList.add('hidden');
+        qtyInput.value = '';
+      }
+    });
+    equipmentOtherField.classList.add('hidden');
+    equipmentOtherName.value = '';
+    equipmentOtherQty.value = '';
+  }
 
   function addItemRow(containerId) {
     const container = document.getElementById(containerId);
@@ -131,8 +226,7 @@
     btn.addEventListener('click', () => addItemRow(btn.dataset.target));
   });
 
-  // start each list with one empty row for convenience
-  addItemRow('equipmentItems');
+  // start the logistics list with one empty row for convenience
   addItemRow('logisticsItems');
 
   needsClassroom.addEventListener('change', () => {
@@ -198,7 +292,7 @@
       location,
       needsClassroom: needsClassroom.checked,
       classroomHours,
-      equipmentItems: collectItems('equipmentItems'),
+      equipmentItems: collectEquipmentItems(),
       logisticsItems: collectItems('logisticsItems'),
       notes: document.getElementById('notes').value.trim(),
       submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -212,8 +306,8 @@
       await window.db.collection('submissions').add(payload);
 
       form.reset();
-      document.querySelectorAll('#equipmentItems, #logisticsItems').forEach((c) => (c.innerHTML = ''));
-      addItemRow('equipmentItems');
+      resetEquipmentGrid();
+      document.getElementById('logisticsItems').innerHTML = '';
       addItemRow('logisticsItems');
       classroomHoursField.classList.add('hidden');
       courseNameOtherField.classList.add('hidden');

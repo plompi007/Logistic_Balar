@@ -133,6 +133,39 @@ input[type="date"], input[type="time"] { color-scheme: dark; }
 }
 .item-row-qty-line .item-qty { flex: 1; }
 
+.item-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.item-chip { display: flex; flex-direction: column; gap: 6px; }
+.chip-toggle {
+  cursor: pointer;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 8px;
+  background: #0f141d;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.83rem;
+  font-weight: 500;
+  text-align: center;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.chip-toggle:hover { border-color: var(--primary); }
+.item-chip.selected .chip-toggle {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  color: var(--primary);
+  font-weight: 700;
+}
+.chip-qty {
+  font-size: 0.8rem;
+  padding: 7px 8px;
+  text-align: center;
+}
+
 .btn {
   cursor: pointer;
   border: none;
