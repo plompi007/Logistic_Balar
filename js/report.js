@@ -323,6 +323,52 @@
     </table>`;
   }
 
+  // מסכם כמויות של פריט מסוים (equipmentItems / logisticsItems) על פני כל ההגשות יחד.
+  function summarizeItems(submissions, key) {
+    const map = new Map();
+    submissions.forEach((s) => {
+      const items = Array.isArray(s[key]) ? s[key] : [];
+      items.forEach((i) => {
+        const name = (i && i.name || '').trim();
+        if (!name) return;
+        const entry = map.get(name) || { name, total: 0, unspecified: 0 };
+        const qtyNum = Number(String((i && i.qty) || '').trim());
+        if (Number.isFinite(qtyNum) && qtyNum > 0) {
+          entry.total += qtyNum;
+        } else {
+          entry.unspecified += 1;
+        }
+        map.set(name, entry);
+      });
+    });
+    return Array.from(map.values()).sort((a, b) => b.total - a.total || a.name.localeCompare(b.name, 'he'));
+  }
+
+  function emailSummaryRow(name, valueText) {
+    return `<tr>
+      <td style="padding:5px 0;border-bottom:1px solid #e6e9f0;font-size:13px;color:#1a2233;" valign="top">${escapeHtml(name)}</td>
+      <td align="left" style="padding:5px 0;border-bottom:1px solid #e6e9f0;font-size:13px;color:#3457d5;font-weight:bold;white-space:nowrap;" valign="top">${escapeHtml(valueText)}</td>
+    </tr>`;
+  }
+
+  function emailSummarySection(title, summary) {
+    if (!summary.length) return '';
+    const rows = summary
+      .map((i) => {
+        const parts = [];
+        if (i.total > 0) parts.push(`${i.total}`);
+        if (i.unspecified > 0) parts.push(`+${i.unspecified} ללא כמות מצוינת`);
+        return emailSummaryRow(i.name, parts.join(' · ') || '-');
+      })
+      .join('');
+    return `<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom:16px;border:1px solid #e6e9f0;border-radius:8px;overflow:hidden;">
+      <tr><td style="padding:16px 20px;background:#ffffff;">
+        <div style="font-size:15px;font-weight:bold;color:#1a2233;margin-bottom:8px;">${escapeHtml(title)}</div>
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">${rows}</table>
+      </td></tr>
+    </table>`;
+  }
+
   function buildEmailHtml(submissions, { title } = {}) {
     const sorted = [...submissions].sort((a, b) => {
       const da = `${a.courseDate || ''}T${a.startTime || '00:00'}`;
@@ -334,6 +380,14 @@
     const body = sorted.length
       ? sorted.map((s, i) => emailSubmissionBlock(s, i + 1)).join('')
       : `<div style="text-align:center;color:#667085;padding:20px;font-size:13px;">אין דרישות להצגה</div>`;
+
+    const equipmentSummary = summarizeItems(sorted, 'equipmentItems');
+    const logisticsSummary = summarizeItems(sorted, 'logisticsItems');
+    const summaryHtml = (equipmentSummary.length || logisticsSummary.length)
+      ? `<div style="text-align:center;font-size:15px;font-weight:bold;color:#1a2233;margin:8px 0 12px;">סיכום כמויות כולל</div>
+         ${emailSummarySection('אמל"ח נדרש - סה"כ', equipmentSummary)}
+         ${emailSummarySection('ציוד לוגיסטי נדרש - סה"כ', logisticsSummary)}`
+      : '';
 
     return `<!DOCTYPE html>
 <html lang="he" dir="rtl">
@@ -357,6 +411,7 @@
           </div>
         </td></tr>
         <tr><td>${body}</td></tr>
+        <tr><td>${summaryHtml}</td></tr>
       </table>
     </td></tr>
   </table>
@@ -364,5 +419,5 @@
 </html>`;
   }
 
-  return { buildReportHtml, buildEmailHtml, isLate, deadlineFor };
+  return { buildReportHtml, buildEmailHtml, isLate, deadlineFor, summarizeItems };
 });
