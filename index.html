@@ -3,13 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>הגשת דרישה לוגיסטית</title>
+<title>בקשת דרישה לוגיסטית</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="container">
   <header class="page-header">
-    <h1>פורמט דרישה לוגיסטית</h1>
+    <h1>בקשת דרישה לוגיסטית</h1>
     <p>יש להגיש עד השעה 12:00 יום לפני הקורס</p>
   </header>
 
@@ -26,7 +29,18 @@
       <legend>פרטי הקורס</legend>
       <div class="field">
         <label for="courseName">שם הקורס *</label>
-        <input type="text" id="courseName" name="courseName" required>
+        <select id="courseName" name="courseName" required>
+          <option value="" disabled selected>בחר/י קורס...</option>
+          <option value="אווטה">אווטה</option>
+          <option value="פלייקארט">פלייקארט</option>
+          <option value="FPV">FPV</option>
+          <option value="הגנמי">הגנמי</option>
+          <option value="אחר">אחר</option>
+        </select>
+      </div>
+      <div class="field hidden" id="courseNameOtherField">
+        <label for="courseNameOther">שם הקורס (אחר) *</label>
+        <input type="text" id="courseNameOther" name="courseNameOther" placeholder="נא לפרט את שם הקורס">
       </div>
       <div class="row">
         <div class="field">
@@ -35,7 +49,9 @@
         </div>
         <div class="field">
           <label for="traineesCount">כמות חניכים</label>
-          <input type="number" id="traineesCount" name="traineesCount" min="0">
+          <select id="traineesCount" name="traineesCount">
+            <option value="">בחר/י כמות...</option>
+          </select>
         </div>
       </div>
       <div class="row">
@@ -59,14 +75,14 @@
     </fieldset>
 
     <fieldset>
-      <legend>פירוט אמל"ח נדרש</legend>
+      <legend>אמל"ח נדרש</legend>
       <p class="hint">יש לפרט כמות מדוייקת של כלל האמצעים</p>
       <div id="equipmentItems"></div>
       <button type="button" class="btn btn-secondary add-item-btn" data-target="equipmentItems">+ הוספת פריט</button>
     </fieldset>
 
     <fieldset>
-      <legend>פירוט ציוד לוגיסטי נדרש</legend>
+      <legend>ציוד לוגיסטי נדרש</legend>
       <p class="hint">יש לפרט כמות מדוייקת</p>
       <div id="logisticsItems"></div>
       <button type="button" class="btn btn-secondary add-item-btn" data-target="logisticsItems">+ הוספת פריט</button>

@@ -63,11 +63,11 @@ window.LogisticReport = (function () {
         <div><strong>הוגש בתאריך:</strong> ${escapeHtml(fmtDateTimeHe(s.submittedAt))}</div>
       </div>
       <div class="section">
-        <h3>פירוט אמל"ח נדרש</h3>
+        <h3>אמל"ח נדרש</h3>
         ${itemsList(s.equipmentItems)}
       </div>
       <div class="section">
-        <h3>פירוט ציוד לוגיסטי נדרש</h3>
+        <h3>ציוד לוגיסטי נדרש</h3>
         ${itemsList(s.logisticsItems)}
       </div>
       ${s.notes ? `<div class="section"><h3>הערות</h3><p>${escapeHtml(s.notes)}</p></div>` : ''}

@@ -5,6 +5,21 @@
   const needsClassroom = document.getElementById('needsClassroom');
   const classroomHoursField = document.getElementById('classroomHoursField');
   const itemRowTemplate = document.getElementById('itemRowTemplate');
+  const courseNameSelect = document.getElementById('courseName');
+  const courseNameOtherField = document.getElementById('courseNameOtherField');
+  const courseNameOther = document.getElementById('courseNameOther');
+  const traineesCountSelect = document.getElementById('traineesCount');
+
+  for (let i = 1; i <= 30; i++) {
+    const opt = document.createElement('option');
+    opt.value = String(i);
+    opt.textContent = String(i);
+    traineesCountSelect.appendChild(opt);
+  }
+
+  courseNameSelect.addEventListener('change', () => {
+    courseNameOtherField.classList.toggle('hidden', courseNameSelect.value !== 'אחר');
+  });
 
   function addItemRow(containerId) {
     const container = document.getElementById(containerId);
@@ -43,7 +58,9 @@
     errorMsg.style.display = 'none';
 
     const submitterName = document.getElementById('submitterName').value.trim();
-    const courseName = document.getElementById('courseName').value.trim();
+    const courseName = courseNameSelect.value === 'אחר'
+      ? courseNameOther.value.trim()
+      : courseNameSelect.value;
     const courseDate = document.getElementById('courseDate').value;
     if (!submitterName || !courseName || !courseDate) {
       errorMsg.textContent = 'יש למלא שם מגיש, שם קורס ותאריך קורס';
@@ -79,6 +96,7 @@
       addItemRow('equipmentItems');
       addItemRow('logisticsItems');
       classroomHoursField.classList.add('hidden');
+      courseNameOtherField.classList.add('hidden');
 
       successMsg.style.display = 'block';
       window.scrollTo({ top: 0, behavior: 'smooth' });
