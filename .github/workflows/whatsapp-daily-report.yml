@@ -1,12 +1,13 @@
 name: WhatsApp daily logistics report
 
 on:
-  schedule:
-    # שתי הרצות ביום כדי לכסות שעון קיץ/חורף בישראל (UTC+2/UTC+3).
-    # הסקריפט עצמו בודק שהשעה בישראל היא 15:00 בדיוק ומדלג בהרצה השנייה.
-    - cron: '0 12 * * *'
-    - cron: '0 13 * * *'
-  workflow_dispatch: {} # מאפשר הרצה ידנית לבדיקה מטאב Actions
+  # התזמון האוטומטי כבוי כרגע לבקשת המשתמש (לא רוצים WhatsApp בינתיים).
+  # כדי להפעיל מחדש: להחזיר את שני שורות ה-cron למטה (מכוסות UTC+2/UTC+3 של ישראל)
+  # ולהוסיף את ה-secrets CALLMEBOT_PHONE ו-CALLMEBOT_APIKEY.
+  # schedule:
+  #   - cron: '0 12 * * *'
+  #   - cron: '0 13 * * *'
+  workflow_dispatch: {} # עדיין אפשר להריץ ידנית לבדיקה מטאב Actions
 
 jobs:
   send-report:
