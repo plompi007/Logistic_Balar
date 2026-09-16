@@ -15,7 +15,10 @@
   try {
     firebase.initializeApp(window.FIREBASE_CONFIG);
     window.db = firebase.firestore();
-    window.auth = firebase.auth();
+    // firebase.auth() קיים רק בעמודים שטוענים גם את firebase-auth-compat.js (admin.html).
+    if (typeof firebase.auth === 'function') {
+      window.auth = firebase.auth();
+    }
   } catch (err) {
     showFatalError('שגיאה באתחול Firebase: ' + err.message);
   }
