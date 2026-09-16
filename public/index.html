@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>הגשת דרישה לוגיסטית</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="container">
+  <header class="page-header">
+    <h1>פורמט דרישה לוגיסטית</h1>
+    <p>יש להגיש עד השעה 12:00 יום לפני הקורס</p>
+  </header>
+
+  <div id="successMsg">הדרישה נשלחה בהצלחה! תודה.</div>
+  <div id="errorMsg"></div>
+
+  <form id="reqForm">
+    <div class="field">
+      <label for="submitterName">שם מגיש הדרישה *</label>
+      <input type="text" id="submitterName" name="submitterName" required autocomplete="name">
+    </div>
+
+    <fieldset>
+      <legend>פרטי הקורס</legend>
+      <div class="field">
+        <label for="courseName">שם הקורס *</label>
+        <input type="text" id="courseName" name="courseName" required>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="courseDate">תאריך הקורס *</label>
+          <input type="date" id="courseDate" name="courseDate" required>
+        </div>
+        <div class="field">
+          <label for="traineesCount">כמות חניכים</label>
+          <input type="number" id="traineesCount" name="traineesCount" min="0">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="startTime">שעת פתיחת הקורס</label>
+          <input type="time" id="startTime" name="startTime">
+        </div>
+        <div class="field">
+          <label for="endTime">שעת סיום הקורס</label>
+          <input type="time" id="endTime" name="endTime">
+        </div>
+      </div>
+      <div class="field checkbox-field">
+        <input type="checkbox" id="needsClassroom" name="needsClassroom">
+        <label for="needsClassroom">יש צורך בכיתה</label>
+      </div>
+      <div class="field hidden" id="classroomHoursField">
+        <label for="classroomHours">שעות כיתה</label>
+        <input type="text" id="classroomHours" name="classroomHours" placeholder="לדוגמה: 08:00-10:00">
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>פירוט אמל"ח נדרש</legend>
+      <p class="hint">יש לפרט כמות מדוייקת של כלל האמצעים</p>
+      <div id="equipmentItems"></div>
+      <button type="button" class="btn btn-secondary add-item-btn" data-target="equipmentItems">+ הוספת פריט</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>פירוט ציוד לוגיסטי נדרש</legend>
+      <p class="hint">יש לפרט כמות מדוייקת</p>
+      <div id="logisticsItems"></div>
+      <button type="button" class="btn btn-secondary add-item-btn" data-target="logisticsItems">+ הוספת פריט</button>
+    </fieldset>
+
+    <div class="field">
+      <label for="notes">הערות</label>
+      <textarea id="notes" name="notes"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-block">שליחת הדרישה</button>
+  </form>
+</div>
+
+<template id="itemRowTemplate">
+  <div class="item-row">
+    <input type="text" class="item-name" placeholder="שם הפריט">
+    <input type="text" class="item-qty" placeholder="כמות">
+    <button type="button" class="btn btn-danger remove-item-btn">הסר</button>
+  </div>
+</template>
+
+<script src="/js/form.js"></script>
+</body>
+</html>

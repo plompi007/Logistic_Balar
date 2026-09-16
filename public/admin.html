@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ניהול דרישות לוגיסטיות</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="container" style="max-width: 960px;">
+
+  <div id="loginBox">
+    <h2 style="margin:0;text-align:center;">כניסת מנהל</h2>
+    <input type="password" id="passwordInput" placeholder="סיסמת מנהל">
+    <button class="btn btn-primary" id="loginBtn">כניסה</button>
+    <p id="loginError" style="color:#991b1b; display:none; margin:0; text-align:center;"></p>
+  </div>
+
+  <div id="adminPanel" class="hidden">
+    <header class="page-header">
+      <h1>ניהול דרישות לוגיסטיות</h1>
+      <p>צפייה, סינון וייצוא דוח מרוכז</p>
+    </header>
+
+    <div class="admin-bar">
+      <div class="field">
+        <label for="filterDate">סינון לפי תאריך קורס</label>
+        <input type="date" id="filterDate">
+      </div>
+      <button class="btn btn-secondary" id="clearFilterBtn">נקה סינון</button>
+      <button class="btn btn-primary" id="exportBtn">ייצוא דוח מסודר</button>
+      <button class="btn btn-secondary" id="refreshBtn">רענון</button>
+    </div>
+
+    <div id="tableWrap"></div>
+  </div>
+</div>
+
+<script src="/js/admin.js"></script>
+</body>
+</html>
