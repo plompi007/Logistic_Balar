@@ -28,9 +28,10 @@
 5. להדביק את הערכים בקובץ [`js/firebase-config.js`](js/firebase-config.js) במקום ה-`REPLACE_ME`.
 6. להעלות את כללי האבטחה מהקובץ [`firestore.rules`](firestore.rules) לטאב **Firestore →
    Rules** בקונסולה (העתק-הדבק ו-Publish), או דרך ה-CLI: `firebase deploy --only firestore:rules`.
-   הכללים מאפשרים לכל אחד להגיש דרישה חדשה, אבל קריאה/עדכון/מחיקה מותרים רק לחשבון ה-Google
-   שמוגדר כמנהל (`nohar.tzur@gmail.com`, ניתן לשינוי גם ב-`firestore.rules` וגם ב-`js/admin.js`
-   באותו זמן אם רוצים להוסיף/להחליף כתובת).
+   הכללים מאפשרים לכל אחד להגיש דרישה חדשה, אבל קריאה/עדכון/מחיקה מותרים רק לחשבונות ה-Google
+   שמוגדרים כמנהלים (`nohar.tzur@gmail.com`, `yonatan1279@gmail.com`). כדי להוסיף/להסיר מנהל
+   בעתיד יש לעדכן את רשימת האימיילים בשני מקומות יחד: מערך ה-emails ב-`firestore.rules` (ואז
+   Publish מחדש) והמערך `ADMIN_EMAILS` ב-`js/admin.js`.
 
 ## פרסום כאתר חי דרך GitHub Pages
 

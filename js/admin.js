@@ -1,5 +1,5 @@
 (function () {
-  const ADMIN_EMAIL = 'nohar.tzur@gmail.com';
+  const ADMIN_EMAILS = ['nohar.tzur@gmail.com', 'yonatan1279@gmail.com'];
 
   const loginBox = document.getElementById('loginBox');
   const adminPanel = document.getElementById('adminPanel');
@@ -28,7 +28,7 @@
   logoutBtn.addEventListener('click', () => window.auth.signOut());
 
   window.auth.onAuthStateChanged((user) => {
-    if (user && user.email === ADMIN_EMAIL) {
+    if (user && ADMIN_EMAILS.includes((user.email || '').toLowerCase())) {
       loginError.style.display = 'none';
       loginBox.classList.add('hidden');
       adminPanel.classList.remove('hidden');
@@ -36,7 +36,7 @@
     } else if (user) {
       // מחובר עם חשבון Google שאינו מורשה לניהול
       window.auth.signOut();
-      loginError.textContent = `החשבון ${user.email} אינו מורשה לניהול. יש להתחבר עם ${ADMIN_EMAIL}`;
+      loginError.textContent = `החשבון ${user.email} אינו מורשה לניהול.`;
       loginError.style.display = 'block';
     } else {
       loginBox.classList.remove('hidden');
