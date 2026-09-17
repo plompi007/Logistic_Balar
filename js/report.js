@@ -501,12 +501,17 @@
     </table>`;
   }
 
-  // סעיפים שהתוכן שלהם לא נגזר מהטופס (שיבוץ ידני של רכבים/כוח אדם/כיתות וכו') - מוצגת
-  // רק הכותרת, שהמנהל ימלא לפי הצורך.
-  function emptySectionBox(title) {
+  // סעיפים שהתוכן שלהם לא נגזר מהטופס (שיבוץ ידני של רכבים/כוח אדם/כיתות וכו') - אם המנהל
+  // מילא תוכן ידני (דרך מסך הניהול) הוא מוצג כרשימת שורות, אחרת מוצגת רק הכותרת.
+  function emptySectionBox(title, content) {
+    const lines = (content || '').split('\n').map((l) => l.trim()).filter(Boolean);
+    const body = lines.length
+      ? `<div style="margin-top:8px;">${lines.map((l) => `<div style="font-size:13px;color:#1a2233;padding:2px 0;">• ${bdi(l)}</div>`).join('')}</div>`
+      : '';
     return `<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom:16px;border:1px solid #e6e9f0;border-radius:8px;overflow:hidden;">
       <tr><td style="padding:16px 20px;background:#ffffff;">
         <div style="font-size:15px;font-weight:bold;color:#1a2233;">${escapeHtml(title)}</div>
+        ${body}
       </td></tr>
     </table>`;
   }
@@ -546,23 +551,24 @@
     return `<div style="text-align:center;font-size:16px;font-weight:bold;color:#3457d5;margin:12px 0;">בהצלחה!!!</div>`;
   }
 
-  function buildMorningTasksSection(submissions) {
+  function buildMorningTasksSection(submissions, manualNotes) {
     if (!submissions.length) return '';
+    const notes = manualNotes || {};
     return `
       ${coursesListSection(submissions)}
       ${morningBox(submissions)}
-      ${emptySectionBox('עמדות למחר')}
-      ${emptySectionBox('כיתות')}
-      ${emptySectionBox('רכבים')}
-      ${emptySectionBox('משימות למחר')}
-      ${emptySectionBox('כוח אדם')}
+      ${emptySectionBox('עמדות למחר', notes.positionsTomorrow)}
+      ${emptySectionBox('כיתות', notes.classrooms)}
+      ${emptySectionBox('רכבים', notes.vehicles)}
+      ${emptySectionBox('משימות למחר', notes.tasksTomorrow)}
+      ${emptySectionBox('כוח אדם', notes.personnel)}
       ${migunBox()}
       ${travelApprovalsBox()}
       ${goodLuckFooter()}
     `;
   }
 
-  function buildEmailHtml(submissions, { title } = {}) {
+  function buildEmailHtml(submissions, { title, manualNotes } = {}) {
     const sorted = [...submissions].sort((a, b) => {
       const da = `${a.courseDate || ''}T${a.startTime || '00:00'}`;
       const db = `${b.courseDate || ''}T${b.startTime || '00:00'}`;
@@ -570,7 +576,7 @@
     });
     const lateCount = sorted.filter(isLate).length;
     const generatedAt = fmtDateTimeHe(new Date());
-    const scheduleHtml = buildMorningTasksSection(sorted);
+    const scheduleHtml = buildMorningTasksSection(sorted, manualNotes);
     const body = sorted.length
       ? sorted.map((s, i) => emailSubmissionBlock(s, i + 1)).join('')
       : `<div style="text-align:center;color:#667085;padding:20px;font-size:13px;">אין דרישות להצגה</div>`;

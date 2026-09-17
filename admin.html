@@ -38,7 +38,153 @@
     </div>
 
     <div id="tableWrap"></div>
+
+    <fieldset style="margin-top:24px;">
+      <legend>תוכן ידני לדוח הבוקר של מחר (רכבים / כוח אדם / כיתות וכו')</legend>
+      <p class="hint">התוכן כאן נשמר לפי תאריך, ונכנס אוטומטית לדוח/מייל הבוקר של אותו תאריך במקום הכותרות הריקות. שורה לכל פריט.</p>
+      <div class="field">
+        <label for="manualNotesDate">תאריך</label>
+        <input type="date" id="manualNotesDate">
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="manualPositionsTomorrow">עמדות למחר</label>
+          <textarea id="manualPositionsTomorrow" rows="4" placeholder="מטיס 1&#10;מטיס 3&#10;..."></textarea>
+        </div>
+        <div class="field">
+          <label for="manualClassrooms">כיתות</label>
+          <textarea id="manualClassrooms" rows="4" placeholder="כיתה 5 - מב&quot;ן חישה&#10;..."></textarea>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="manualVehicles">רכבים</label>
+          <textarea id="manualVehicles" rows="4" placeholder="האמר - מטיס 1 - בר ונוהר&#10;..."></textarea>
+        </div>
+        <div class="field">
+          <label for="manualTasksTomorrow">משימות למחר</label>
+          <textarea id="manualTasksTomorrow" rows="4" placeholder="למלא גנרטורים בנזין&#10;..."></textarea>
+        </div>
+      </div>
+      <div class="field">
+        <label for="manualPersonnel">כוח אדם</label>
+        <textarea id="manualPersonnel" rows="3" placeholder="אליקים - מנשה + נוהר...&#10;לכיש - שרון"></textarea>
+      </div>
+      <button type="button" class="btn btn-primary" id="saveManualNotesBtn">שמירה</button>
+      <span id="manualNotesSavedMsg" class="hidden" style="color:var(--success); margin-inline-start:10px; font-weight:600;">נשמר ✓</span>
+    </fieldset>
   </div>
+</div>
+
+<div id="editModal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:50; overflow-y:auto; padding:30px 14px;">
+  <form id="editForm" style="max-width:640px; margin:0 auto; background:linear-gradient(180deg, var(--card), var(--card-alt)); border:1px solid var(--border-soft); border-radius:var(--radius); padding:22px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:16px;">
+    <h2 style="margin:0;">עריכת דרישה</h2>
+
+    <div class="field">
+      <label for="editSubmitterName">שם המדריך</label>
+      <input type="text" id="editSubmitterName">
+    </div>
+
+    <div class="field">
+      <label for="editCourseName">שם הקורס</label>
+      <select id="editCourseName">
+        <option value="מטיס מבצעי">מטיס מבצעי</option>
+        <option value="FPV שבוע A">FPV שבוע A</option>
+        <option value="FPV שבוע B">FPV שבוע B</option>
+        <option value="FPV שבוע C">FPV שבוע C</option>
+        <option value="כדור ברזל">כדור ברזל</option>
+        <option value="בומרנג">בומרנג</option>
+        <option value="אלפא">אלפא</option>
+        <option value="אווטה">אווטה</option>
+        <option value="קורס קיט">קורס קיט</option>
+        <option value="מב״ן חישה">מב״ן חישה</option>
+        <option value="פלייקארט">פלייקארט</option>
+        <option value="שמירת כשירות">שמירת כשירות</option>
+        <option value="מטיסים מנוסים">מטיסים מנוסים</option>
+        <option value="אחר">אחר</option>
+      </select>
+    </div>
+    <div class="field hidden" id="editCourseNameOtherField">
+      <label for="editCourseNameOther">שם הקורס (אחר)</label>
+      <input type="text" id="editCourseNameOther">
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="editCourseDate">תאריך הקורס</label>
+        <input type="date" id="editCourseDate">
+      </div>
+      <div class="field">
+        <label for="editTraineesCount">כמות חניכים</label>
+        <input type="text" id="editTraineesCount">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="editStartTime">שעת פתיחה</label>
+        <input type="time" id="editStartTime">
+      </div>
+      <div class="field">
+        <label for="editEndTime">שעת סיום</label>
+        <input type="time" id="editEndTime">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="editLocation">מיקום / עמדה</label>
+      <select id="editLocation">
+        <option value="">בחר/י מיקום...</option>
+        <option value="מנחת 1">מנחת 1</option>
+        <option value="מטיס 1">מטיס 1</option>
+        <option value="מטיס 3">מטיס 3</option>
+        <option value="חורשת לשבייה">חורשת לשבייה</option>
+        <option value="מטווח 10">מטווח 10</option>
+        <option value="בארי">בארי</option>
+        <option value="דלקייה">דלקייה</option>
+        <option value="אחר">אחר</option>
+      </select>
+    </div>
+    <div class="field hidden" id="editLocationOtherField">
+      <label for="editLocationOther">מיקום (אחר)</label>
+      <input type="text" id="editLocationOther">
+    </div>
+
+    <div class="field checkbox-field">
+      <input type="checkbox" id="editNeedsClassroom">
+      <label for="editNeedsClassroom">יש צורך בכיתה</label>
+    </div>
+    <div class="row hidden" id="editClassroomHoursField">
+      <div class="field">
+        <label for="editClassroomStartTime">שעת התחלת כיתה</label>
+        <input type="time" id="editClassroomStartTime">
+      </div>
+      <div class="field">
+        <label for="editClassroomEndTime">שעת סיום כיתה</label>
+        <input type="time" id="editClassroomEndTime">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="editEquipmentItems">אמל"ח (שורה לכל פריט, בפורמט "שם - כמות")</label>
+      <textarea id="editEquipmentItems" rows="5" placeholder="איבו - -&#10;אלפא - 2"></textarea>
+    </div>
+
+    <div class="field">
+      <label for="editLogisticsItems">ציוד לוגיסטי (שורה לכל פריט, בפורמט "שם - כמות")</label>
+      <textarea id="editLogisticsItems" rows="4" placeholder="כיסאות - 20"></textarea>
+    </div>
+
+    <div class="field">
+      <label for="editNotes">הערות</label>
+      <textarea id="editNotes" rows="3"></textarea>
+    </div>
+
+    <div class="row">
+      <button type="submit" class="btn btn-primary" style="flex:1;">שמירה</button>
+      <button type="button" class="btn btn-secondary" id="editCancelBtn" style="flex:1;">ביטול</button>
+    </div>
+  </form>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>

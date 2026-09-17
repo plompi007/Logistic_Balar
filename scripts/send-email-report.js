@@ -2,7 +2,7 @@
 // רץ בתוך GitHub Actions (ראו .github/workflows/email-daily-report.yml).
 const nodemailer = require('nodemailer');
 const { currentJerusalemHour } = require('./lib/time');
-const { fetchTomorrowSubmissions } = require('./lib/firestore');
+const { fetchTomorrowSubmissions, fetchManualNotes } = require('./lib/firestore');
 const { buildEmailHtml, fmtDateHe } = require('../js/report.js');
 
 const TARGET_HOUR = 18;
@@ -37,8 +37,9 @@ async function main() {
   }
 
   const { targetDate, submissions } = await fetchTomorrowSubmissions();
+  const manualNotes = await fetchManualNotes(targetDate);
   const title = `דוח דרישות לוגיסטיות - קורסי ${fmtDateHe(targetDate)}`;
-  const html = buildEmailHtml(submissions, { title });
+  const html = buildEmailHtml(submissions, { title, manualNotes });
 
   await sendEmail({ subject: title, html });
   console.log(`מייל נשלח בהצלחה (${submissions.length} דרישות ליום ${targetDate}).`);

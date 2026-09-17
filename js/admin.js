@@ -14,10 +14,200 @@
   const seedBtn = document.getElementById('seedBtn');
   const clearSeedBtn = document.getElementById('clearSeedBtn');
 
+  const editModal = document.getElementById('editModal');
+  const editForm = document.getElementById('editForm');
+  const editCancelBtn = document.getElementById('editCancelBtn');
+  const editCourseName = document.getElementById('editCourseName');
+  const editCourseNameOtherField = document.getElementById('editCourseNameOtherField');
+  const editCourseNameOther = document.getElementById('editCourseNameOther');
+  const editLocation = document.getElementById('editLocation');
+  const editLocationOtherField = document.getElementById('editLocationOtherField');
+  const editLocationOther = document.getElementById('editLocationOther');
+  const editNeedsClassroom = document.getElementById('editNeedsClassroom');
+  const editClassroomHoursField = document.getElementById('editClassroomHoursField');
+  const editClassroomStartTime = document.getElementById('editClassroomStartTime');
+  const editClassroomEndTime = document.getElementById('editClassroomEndTime');
+  let editingId = null;
+
+  editCourseName.addEventListener('change', () => {
+    editCourseNameOtherField.classList.toggle('hidden', editCourseName.value !== 'אחר');
+  });
+  editLocation.addEventListener('change', () => {
+    editLocationOtherField.classList.toggle('hidden', editLocation.value !== 'אחר');
+  });
+  editNeedsClassroom.addEventListener('change', () => {
+    editClassroomHoursField.classList.toggle('hidden', !editNeedsClassroom.checked);
+  });
+
+  // ממיר רשימת פריטים לטקסט (שורה לכל פריט "שם - כמות") ובחזרה, לעריכה נוחה בטקסט חופשי.
+  function itemsToText(items) {
+    return (Array.isArray(items) ? items : [])
+      .filter((i) => i && (i.name || '').trim())
+      .map((i) => `${i.name} - ${i.qty || '-'}`)
+      .join('\n');
+  }
+
+  function textToItems(text) {
+    return text
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => {
+        const idx = line.lastIndexOf(' - ');
+        if (idx === -1) return { name: line, qty: '-' };
+        return { name: line.slice(0, idx).trim(), qty: line.slice(idx + 3).trim() || '-' };
+      })
+      .filter((item) => item.name);
+  }
+
+  function openEditModal(item) {
+    editingId = item.id;
+    document.getElementById('editSubmitterName').value = item.submitterName || '';
+
+    const knownCourseNames = Array.from(editCourseName.options).map((o) => o.value);
+    if (item.courseName && !knownCourseNames.includes(item.courseName)) {
+      editCourseName.value = 'אחר';
+      editCourseNameOther.value = item.courseName;
+    } else {
+      editCourseName.value = item.courseName || '';
+      editCourseNameOther.value = '';
+    }
+    editCourseNameOtherField.classList.toggle('hidden', editCourseName.value !== 'אחר');
+
+    document.getElementById('editCourseDate').value = item.courseDate || '';
+    document.getElementById('editTraineesCount').value = item.traineesCount || '';
+    document.getElementById('editStartTime').value = item.startTime || '';
+    document.getElementById('editEndTime').value = item.endTime || '';
+
+    const knownLocations = Array.from(editLocation.options).map((o) => o.value);
+    if (item.location && !knownLocations.includes(item.location)) {
+      editLocation.value = 'אחר';
+      editLocationOther.value = item.location;
+    } else {
+      editLocation.value = item.location || '';
+      editLocationOther.value = '';
+    }
+    editLocationOtherField.classList.toggle('hidden', editLocation.value !== 'אחר');
+
+    editNeedsClassroom.checked = !!item.needsClassroom;
+    editClassroomHoursField.classList.toggle('hidden', !item.needsClassroom);
+    const [classroomStart, classroomEnd] = (item.classroomHours || '').split('-');
+    editClassroomStartTime.value = classroomStart || '';
+    editClassroomEndTime.value = classroomEnd || '';
+
+    document.getElementById('editEquipmentItems').value = itemsToText(item.equipmentItems);
+    document.getElementById('editLogisticsItems').value = itemsToText(item.logisticsItems);
+    document.getElementById('editNotes').value = item.notes || '';
+
+    editModal.classList.remove('hidden');
+  }
+
+  function closeEditModal() {
+    editModal.classList.add('hidden');
+    editingId = null;
+  }
+
+  editCancelBtn.addEventListener('click', closeEditModal);
+  editModal.addEventListener('click', (e) => {
+    if (e.target === editModal) closeEditModal();
+  });
+
+  editForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!editingId) return;
+
+    const courseName = editCourseName.value === 'אחר' ? editCourseNameOther.value.trim() : editCourseName.value;
+    const location = editLocation.value === 'אחר' ? editLocationOther.value.trim() : editLocation.value;
+    const classroomHours = editClassroomStartTime.value && editClassroomEndTime.value
+      ? `${editClassroomStartTime.value}-${editClassroomEndTime.value}`
+      : (editClassroomStartTime.value || editClassroomEndTime.value || '');
+
+    const update = {
+      submitterName: document.getElementById('editSubmitterName').value.trim(),
+      courseName,
+      courseDate: document.getElementById('editCourseDate').value,
+      traineesCount: document.getElementById('editTraineesCount').value.trim(),
+      startTime: document.getElementById('editStartTime').value,
+      endTime: document.getElementById('editEndTime').value,
+      location,
+      needsClassroom: editNeedsClassroom.checked,
+      classroomHours,
+      equipmentItems: textToItems(document.getElementById('editEquipmentItems').value),
+      logisticsItems: textToItems(document.getElementById('editLogisticsItems').value),
+      notes: document.getElementById('editNotes').value.trim(),
+    };
+
+    const submitBtn = editForm.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'שומר...';
+    try {
+      await window.db.collection('submissions').doc(editingId).update(update);
+      closeEditModal();
+      await loadSubmissions();
+    } catch (err) {
+      alert('שגיאה בשמירת השינויים: ' + err.message);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'שמירה';
+    }
+  });
+
   if (new URLSearchParams(location.search).get('seed') === '1') {
     seedBtn.classList.remove('hidden');
     clearSeedBtn.classList.remove('hidden');
   }
+
+  // תוכן ידני (רכבים/כוח אדם/כיתות/עמדות למחר/משימות למחר) לדוח הבוקר, נשמר לפי תאריך
+  // ונקרא ע"י סקריפט המייל היומי כדי למלא את הסעיפים שלא נגזרים מהטופס. מוצהר כאן, לפני
+  // ה-onAuthStateChanged למטה שקורא ל-loadManualNotes באופן מיידי כשמשתמש כבר מחובר.
+  const manualNotesDate = document.getElementById('manualNotesDate');
+  const manualNotesFields = {
+    positionsTomorrow: document.getElementById('manualPositionsTomorrow'),
+    classrooms: document.getElementById('manualClassrooms'),
+    vehicles: document.getElementById('manualVehicles'),
+    tasksTomorrow: document.getElementById('manualTasksTomorrow'),
+    personnel: document.getElementById('manualPersonnel'),
+  };
+  const saveManualNotesBtn = document.getElementById('saveManualNotesBtn');
+  const manualNotesSavedMsg = document.getElementById('manualNotesSavedMsg');
+
+  function defaultManualNotesDate() {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().slice(0, 10);
+  }
+
+  async function loadManualNotes() {
+    manualNotesSavedMsg.classList.add('hidden');
+    const date = manualNotesDate.value;
+    if (!date) return;
+    const doc = await window.db.collection('dailyNotes').doc(date).get();
+    const data = doc.exists ? doc.data() : {};
+    Object.entries(manualNotesFields).forEach(([key, field]) => {
+      field.value = data[key] || '';
+    });
+  }
+
+  manualNotesDate.value = defaultManualNotesDate();
+  manualNotesDate.addEventListener('change', loadManualNotes);
+
+  saveManualNotesBtn.addEventListener('click', async () => {
+    const date = manualNotesDate.value;
+    if (!date) return;
+    const data = {};
+    Object.entries(manualNotesFields).forEach(([key, field]) => {
+      data[key] = field.value.trim();
+    });
+    saveManualNotesBtn.disabled = true;
+    try {
+      await window.db.collection('dailyNotes').doc(date).set(data, { merge: true });
+      manualNotesSavedMsg.classList.remove('hidden');
+    } catch (err) {
+      alert('שגיאה בשמירה: ' + err.message);
+    } finally {
+      saveManualNotesBtn.disabled = false;
+    }
+  });
 
   let allSubmissions = [];
 
@@ -40,6 +230,7 @@
       loginBox.classList.add('hidden');
       adminPanel.classList.remove('hidden');
       loadSubmissions();
+      loadManualNotes();
     } else if (user) {
       // מחובר עם חשבון Google שאינו מורשה לניהול
       window.auth.signOut();
@@ -67,6 +258,16 @@
     return `<bdi>${escapeHtml(str)}</bdi>`;
   }
 
+  // מזהה הגשות כפולות (אותו קורס + אותו תאריך) כדי להתריע עליהן במנהל.
+  function computeDuplicateKeys(items) {
+    const counts = new Map();
+    items.forEach((item) => {
+      const key = `${item.courseName || ''}|${item.courseDate || ''}`;
+      counts.set(key, (counts.get(key) || 0) + 1);
+    });
+    return new Set(Array.from(counts.entries()).filter(([, count]) => count > 1).map(([key]) => key));
+  }
+
   function renderTable(items) {
     if (!items.length) {
       tableWrap.innerHTML = '<p style="text-align:center;color:#6b7280;">אין דרישות להצגה</p>';
@@ -75,17 +276,22 @@
     const sorted = [...items].sort((a, b) =>
       `${a.courseDate || ''}${a.startTime || ''}`.localeCompare(`${b.courseDate || ''}${b.startTime || ''}`)
     );
+    const duplicateKeys = computeDuplicateKeys(sorted);
     const rows = sorted
       .map((item) => {
         const late = window.LogisticReport.isLate(item);
+        const isDuplicate = duplicateKeys.has(`${item.courseName || ''}|${item.courseDate || ''}`);
         return `<tr class="${late ? 'late' : ''}" data-id="${item.id}">
-          <td>${bdi(item.courseName)}</td>
+          <td>${bdi(item.courseName)}${isDuplicate ? ' <span class="tag tag-duplicate" title="קיימת הגשה נוספת לאותו קורס ותאריך">⚠ כפילות</span>' : ''}</td>
           <td>${escapeHtml(item.courseDate)}</td>
           <td>${escapeHtml(item.startTime)}-${escapeHtml(item.endTime)}</td>
           <td title="${escapeHtml(item.submitterEmail || '')}">${bdi(item.submitterName)}</td>
           <td>${escapeHtml(item.traineesCount || '-')}</td>
           <td><span class="tag ${late ? 'tag-late' : 'tag-ok'}">${late ? 'באיחור' : 'בזמן'}</span></td>
-          <td><button class="btn btn-danger delete-btn" data-id="${item.id}">מחק</button></td>
+          <td>
+            <button class="btn btn-secondary edit-btn" data-id="${item.id}">ערוך</button>
+            <button class="btn btn-danger delete-btn" data-id="${item.id}">מחק</button>
+          </td>
         </tr>`;
       })
       .join('');
@@ -101,6 +307,13 @@
         if (!confirm('למחוק דרישה זו?')) return;
         await window.db.collection('submissions').doc(btn.dataset.id).delete();
         loadSubmissions();
+      });
+    });
+
+    tableWrap.querySelectorAll('.edit-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const item = allSubmissions.find((s) => s.id === btn.dataset.id);
+        if (item) openEditModal(item);
       });
     });
   }

@@ -42,4 +42,12 @@ async function fetchRecentFeedback(days) {
   });
 }
 
-module.exports = { fetchTomorrowSubmissions, fetchRecentFeedback };
+// שולף את התוכן הידני (רכבים/כוח אדם/כיתות וכו') שהמנהל מילא למחר, אם קיים.
+async function fetchManualNotes(dateStr) {
+  ensureInitialized();
+  const db = getFirestore();
+  const doc = await db.collection('dailyNotes').doc(dateStr).get();
+  return doc.exists ? doc.data() : {};
+}
+
+module.exports = { fetchTomorrowSubmissions, fetchRecentFeedback, fetchManualNotes };

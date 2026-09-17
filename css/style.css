@@ -243,6 +243,7 @@ tr.late td { background: rgba(242, 96, 122, 0.06); }
 .tag { padding: 3px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
 .tag-ok { background: var(--success-soft); color: var(--success); }
 .tag-late { background: var(--danger-soft); color: var(--danger); }
+.tag-duplicate { background: rgba(245, 158, 11, 0.14); color: #f59e0b; }
 
 #loginBox {
   max-width: 340px;
