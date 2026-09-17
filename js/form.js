@@ -102,6 +102,7 @@
   ]);
 
   const equipmentGrid = document.getElementById('equipmentGrid');
+  const equipmentSelectedCount = document.getElementById('equipmentSelectedCount');
   const equipmentOtherField = document.getElementById('equipmentOtherField');
   const equipmentOtherName = document.getElementById('equipmentOtherName');
   const equipmentOtherQty = document.getElementById('equipmentOtherQty');
@@ -160,6 +161,21 @@
   }
 
   buildEquipmentGrid();
+
+  // מונה "X פריטים נבחרו" מעל הגריד - מאזין לשינויי class על הצ'יפים במקום שכל מקום
+  // שמסמן/מבטל בחירה (קליק, ברירות מחדל לפי קורס, איפוס, שכפול הגשה) יצטרך לעדכן ידנית.
+  function updateEquipmentSelectedCount() {
+    const count = equipmentGrid.querySelectorAll('.item-chip.selected').length;
+    equipmentSelectedCount.textContent = count === 0
+      ? 'לא נבחרו פריטים עדיין'
+      : count === 1
+        ? 'פריט אחד נבחר'
+        : `${count} פריטים נבחרו`;
+  }
+  new MutationObserver(updateEquipmentSelectedCount).observe(equipmentGrid, {
+    attributes: true, attributeFilter: ['class'], subtree: true,
+  });
+  updateEquipmentSelectedCount();
 
   // תבניות ברירת מחדל לאמל"ח לפי קורס - נבחר אוטומטית כשבוחרים קורס, ואפשר עדיין
   // לתקן/להוסיף/להסיר ידנית. ציוד לוגיסטי לא כלול כאן בכוונה כי הוא משתנה כל פעם.
