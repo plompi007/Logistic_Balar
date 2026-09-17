@@ -91,6 +91,7 @@
   const equipmentOtherField = document.getElementById('equipmentOtherField');
   const equipmentOtherName = document.getElementById('equipmentOtherName');
   const equipmentOtherQty = document.getElementById('equipmentOtherQty');
+  const equipmentShowMoreBtn = document.getElementById('equipmentShowMoreBtn');
 
   function buildEquipmentGrid() {
     EQUIPMENT_ITEMS.forEach((name) => {
@@ -181,6 +182,18 @@
   function applyCourseDefaults(courseName) {
     resetEquipmentGrid();
     const defaults = COURSE_DEFAULTS[courseName];
+
+    // מציגים בברירת מחדל רק את הפריטים הרלוונטיים לקורס שנבחר (אם יש לו תבנית) - נקי יותר
+    // לעין - ומאפשרים לחשוף את שאר הפריטים בלחיצה, למקרה שנדרש משהו יוצא דופן.
+    const relevantNames = defaults ? new Set(defaults.map((d) => d.name)) : null;
+    equipmentGrid.classList.remove('show-all');
+    Array.from(equipmentGrid.querySelectorAll('.item-chip')).forEach((chip) => {
+      const isRelevant = !relevantNames || chip.dataset.name === 'אחר' || relevantNames.has(chip.dataset.name);
+      chip.classList.toggle('chip-filtered-out', !isRelevant);
+    });
+    equipmentShowMoreBtn.classList.toggle('hidden', !relevantNames);
+    equipmentShowMoreBtn.textContent = 'הצג את כל הפריטים';
+
     if (!defaults) return;
     defaults.forEach(({ name, qty }) => {
       const chip = findChipByName(name);
@@ -193,6 +206,11 @@
       }
     });
   }
+
+  equipmentShowMoreBtn.addEventListener('click', () => {
+    const showingAll = equipmentGrid.classList.toggle('show-all');
+    equipmentShowMoreBtn.textContent = showingAll ? 'הצג רק את הפריטים הרלוונטיים' : 'הצג את כל הפריטים';
+  });
 
   function collectEquipmentItems() {
     const items = [];
@@ -212,13 +230,15 @@
 
   function resetEquipmentGrid() {
     equipmentGrid.querySelectorAll('.item-chip').forEach((chip) => {
-      chip.classList.remove('selected');
+      chip.classList.remove('selected', 'chip-filtered-out');
       const qtyInput = chip.querySelector('.chip-qty');
       if (qtyInput) {
         qtyInput.classList.add('hidden');
         qtyInput.value = '';
       }
     });
+    equipmentGrid.classList.remove('show-all');
+    equipmentShowMoreBtn.classList.add('hidden');
     equipmentOtherField.classList.add('hidden');
     equipmentOtherName.value = '';
     equipmentOtherQty.value = '';

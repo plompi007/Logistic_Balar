@@ -140,6 +140,8 @@ input[type="date"], input[type="time"] { color-scheme: dark; }
   margin-bottom: 4px;
 }
 .item-chip { display: flex; flex-direction: column; gap: 6px; }
+.item-chip.chip-filtered-out { display: none; }
+.item-grid.show-all .item-chip.chip-filtered-out { display: flex; }
 .chip-toggle {
   cursor: pointer;
   border: 1px solid var(--border);
