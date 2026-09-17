@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="has-sticky-submit">
 <div class="container">
 
   <div id="loginBox">
@@ -146,7 +146,11 @@
       <textarea id="notes" name="notes"></textarea>
     </div>
 
-    <button type="submit" class="btn btn-primary btn-block">שליחת הדרישה</button>
+    <div class="sticky-submit-bar">
+      <div class="sticky-submit-bar-inner">
+        <button type="submit" class="btn btn-primary btn-block">שליחת הדרישה</button>
+      </div>
+    </div>
   </form>
 
   <p style="text-align:center; margin-top: 18px;">

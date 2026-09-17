@@ -191,6 +191,23 @@ input[type="date"], input[type="time"] { color-scheme: dark; }
 
 .add-item-btn { align-self: flex-start; }
 
+/* כפתור השליחה נשאר צמוד לתחתית המסך תמיד גלוי, כדי שבטופס הארוך הזה לא יצטרכו לגלול
+   חזרה למטה בשביל לשלוח. body.has-sticky-submit מקבל ריווח תחתון כדי שהבר לא יכסה תוכן. */
+body.has-sticky-submit { padding-bottom: 96px; }
+.sticky-submit-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  background: var(--card);
+  border-top: 1px solid var(--border-soft);
+  padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+  box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.35);
+}
+.sticky-submit-bar-inner { max-width: 680px; margin: 0 auto; }
+.sticky-submit-bar .btn-block { margin: 0; }
+
 .hint { font-size: 0.8rem; color: var(--muted); margin: -4px 0 4px; }
 
 #successMsg, #errorMsg {
@@ -244,6 +261,42 @@ tr.late td { background: rgba(242, 96, 122, 0.06); }
 .tag-ok { background: var(--success-soft); color: var(--success); }
 .tag-late { background: var(--danger-soft); color: var(--danger); }
 .tag-duplicate { background: rgba(245, 158, 11, 0.14); color: #f59e0b; }
+
+/* מתחת לרוחב מסוים הטבלה עוברת מ"טבלה" ל"כרטיסים" - כל שורה הופכת לכרטיס, וכל תא
+   מציג לצידו את שם העמודה שלו (data-label) במקום כותרת טבלה שממילא לא נכנסת ברוחב טלפון. */
+@media (max-width: 640px) {
+  table, table thead, table tbody, table tr, table td { display: block; width: 100%; }
+  table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  table { overflow: visible; box-shadow: none; border: none; background: none; }
+  table tr {
+    background: linear-gradient(180deg, var(--card), var(--card-alt));
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 12px;
+  }
+  table tr.late { background: rgba(242, 96, 122, 0.06); }
+  table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border-soft);
+    text-align: left;
+  }
+  table td:last-child { border-bottom: none; flex-wrap: wrap; }
+  table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 0.78rem;
+    flex-shrink: 0;
+  }
+  .admin-bar { flex-direction: column; align-items: stretch; }
+  .admin-bar .field { min-width: 0; }
+  .admin-bar button { width: 100%; }
+}
 
 #loginBox {
   max-width: 340px;

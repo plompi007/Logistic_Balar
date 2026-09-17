@@ -282,13 +282,13 @@
         const late = window.LogisticReport.isLate(item);
         const isDuplicate = duplicateKeys.has(`${item.courseName || ''}|${item.courseDate || ''}`);
         return `<tr class="${late ? 'late' : ''}" data-id="${item.id}">
-          <td>${bdi(item.courseName)}${isDuplicate ? ' <span class="tag tag-duplicate" title="קיימת הגשה נוספת לאותו קורס ותאריך">⚠ כפילות</span>' : ''}</td>
-          <td>${escapeHtml(item.courseDate)}</td>
-          <td>${escapeHtml(item.startTime)}-${escapeHtml(item.endTime)}</td>
-          <td title="${escapeHtml(item.submitterEmail || '')}">${bdi(item.submitterName)}</td>
-          <td>${escapeHtml(item.traineesCount || '-')}</td>
-          <td><span class="tag ${late ? 'tag-late' : 'tag-ok'}">${late ? 'באיחור' : 'בזמן'}</span></td>
-          <td>
+          <td data-label="קורס">${bdi(item.courseName)}${isDuplicate ? ' <span class="tag tag-duplicate" title="קיימת הגשה נוספת לאותו קורס ותאריך">⚠ כפילות</span>' : ''}</td>
+          <td data-label="תאריך">${escapeHtml(item.courseDate)}</td>
+          <td data-label="שעות">${escapeHtml(item.startTime)}-${escapeHtml(item.endTime)}</td>
+          <td data-label="מדריך" title="${escapeHtml(item.submitterEmail || '')}">${bdi(item.submitterName)}</td>
+          <td data-label="חניכים">${escapeHtml(item.traineesCount || '-')}</td>
+          <td data-label="סטטוס"><span class="tag ${late ? 'tag-late' : 'tag-ok'}">${late ? 'באיחור' : 'בזמן'}</span></td>
+          <td data-label="פעולות">
             <button class="btn btn-secondary edit-btn" data-id="${item.id}">ערוך</button>
             <button class="btn btn-danger delete-btn" data-id="${item.id}">מחק</button>
           </td>
