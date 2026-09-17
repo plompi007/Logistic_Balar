@@ -59,6 +59,7 @@
 
   courseNameSelect.addEventListener('change', () => {
     courseNameOtherField.classList.toggle('hidden', courseNameSelect.value !== 'אחר');
+    applyCourseDefaults(courseNameSelect.value);
   });
 
   locationSelect.addEventListener('change', () => {
@@ -79,6 +80,7 @@
     'פלייקארט 100', 'פלייקארט 30',
     'בלואטי', 'פקפק', 'מב"ן חישה', 'רינג', 'עין הבשור', 'פיש',
     'מגן שמיים', 'בני', 'סוללות איבו', 'סוללות אלפא',
+    'סוללות שבוע C', 'סוללות B1', 'סוללות B2',
     'סלייב', 'כבל מאריך', 'מפצל',
   ];
   const EQUIPMENT_QTY_REQUIRED = new Set([
@@ -143,6 +145,54 @@
   }
 
   buildEquipmentGrid();
+
+  // תבניות ברירת מחדל לאמל"ח לפי קורס - נבחר אוטומטית כשבוחרים קורס, ואפשר עדיין
+  // לתקן/להוסיף/להסיר ידנית. ציוד לוגיסטי לא כלול כאן בכוונה כי הוא משתנה כל פעם.
+  const COURSE_DEFAULTS = {
+    'מטיס מבצעי': [
+      { name: 'איבו' }, { name: 'אולרים' }, { name: 'אנטנת הרחקה' },
+    ],
+    'פלייקארט': [
+      { name: 'פלייקארט 30' }, { name: 'פלייקארט 100' },
+    ],
+    'בומרנג': [
+      { name: 'אטטי', qty: '2' }, { name: 'אלפא', qty: '2' }, { name: 'סוללות אלפא' },
+    ],
+    'כדור ברזל': [
+      { name: 'אטטי', qty: '2' }, { name: 'מתקן הטלה כדור ברזל', qty: '4' },
+    ],
+    'מב"ן חישה': [
+      { name: 'מב"ן חישה' },
+    ],
+    'FPV שבוע C': [
+      { name: 'ערכת עטלף' }, { name: 'פליקן לוס' }, { name: 'בלואטי' },
+      { name: 'פליקן C2' }, { name: 'סוללות שבוע C' },
+    ],
+    'FPV שבוע B': [
+      { name: 'פליקן מטיס 3' }, { name: 'פליקן B1' }, { name: 'פליקן B2' },
+      { name: 'סוללות B1' }, { name: 'סוללות B2' }, { name: 'בלואטי', qty: '2' },
+    ],
+  };
+
+  function findChipByName(name) {
+    return Array.from(equipmentGrid.querySelectorAll('.item-chip')).find((chip) => chip.dataset.name === name);
+  }
+
+  function applyCourseDefaults(courseName) {
+    resetEquipmentGrid();
+    const defaults = COURSE_DEFAULTS[courseName];
+    if (!defaults) return;
+    defaults.forEach(({ name, qty }) => {
+      const chip = findChipByName(name);
+      if (!chip) return;
+      chip.classList.add('selected');
+      const qtyInput = chip.querySelector('.chip-qty');
+      if (qtyInput) {
+        qtyInput.classList.remove('hidden');
+        if (qty) qtyInput.value = qty;
+      }
+    });
+  }
 
   function collectEquipmentItems() {
     const items = [];
