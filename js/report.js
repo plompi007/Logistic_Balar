@@ -391,39 +391,175 @@
     </table>`;
   }
 
-  // בונה שורת "בשעה X:XX פתיחת עמדות [קורס] ב[מיקום] - [ציוד]" בסגנון לוח המשימות היומי.
-  // כל פריט (וכל שם קורס/מיקום) עטוף ב-<bdi> כדי שמספרים ומילים באנגלית בתוך משפט עברי
-  // לא "יזלגו"/יתחלפו בסדר שלהם בגלל אלגוריתם ה-bidi.
+  // בונה טקסט "[קורס] ב[מיקום] - [ציוד]" בסגנון לוח המשימות היומי. כל פריט (וכל שם
+  // קורס/מיקום) עטוף ב-<bdi> כדי שמספרים ומילים באנגלית בתוך משפט עברי לא "יזלגו"/יתחלפו
+  // בסדר שלהם בגלל אלגוריתם ה-bidi.
   function scheduleItemsText(items) {
     const clean = (Array.isArray(items) ? items : []).filter((i) => i && (i.name || '').trim());
     if (!clean.length) return '';
     return clean.map((i) => bdi(i.qty && i.qty !== '-' ? `${i.qty} ${i.name}` : i.name)).join(', ');
   }
 
-  function emailScheduleRow(s) {
+  function scheduleRowText(s) {
     const time = escapeHtml(s.startTime || '--:--');
     const courseName = bdi(s.courseName || '');
     const loc = s.location ? ` ב${bdi(s.location)}` : '';
     const allItems = [...(Array.isArray(s.equipmentItems) ? s.equipmentItems : []), ...(Array.isArray(s.logisticsItems) ? s.logisticsItems : [])];
     const items = scheduleItemsText(allItems);
     const itemsPart = items ? ` - ${items}` : '';
-    return `<tr><td style="padding:6px 0;border-bottom:1px solid #e6e9f0;font-size:13px;color:#1a2233;" valign="top">
-      <span style="font-weight:bold;color:#3457d5;">בשעה ${time}</span>
-      פתיחת עמדות <span style="font-weight:bold;">${courseName}</span>${loc}${itemsPart}
-    </td></tr>`;
+    return `<span style="font-weight:bold;color:#3457d5;">בשעה ${time}</span> פתיחת עמדות <span style="font-weight:bold;">${courseName}</span>${loc}${itemsPart}`;
   }
 
-  function buildMorningScheduleSection(submissions) {
-    const withTime = submissions.filter((s) => s.startTime);
-    if (!withTime.length) return '';
-    const sorted = [...withTime].sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
-    const rows = sorted.map(emailScheduleRow).join('');
+  function morningBulletRow(html) {
+    return `<tr><td style="padding:6px 0;border-bottom:1px solid #e6e9f0;font-size:13px;color:#1a2233;" valign="top">• ${html}</td></tr>`;
+  }
+
+  function equipmentQtyFor(summary, name) {
+    const entry = summary.find((i) => i.name === name);
+    if (!entry) return 0;
+    return entry.total > 0 ? entry.total : entry.unspecified;
+  }
+
+  function hasEquipment(submission, name) {
+    return (Array.isArray(submission.equipmentItems) ? submission.equipmentItems : [])
+      .some((i) => i && (i.name || '').trim() === name);
+  }
+
+  // "מכולה אדומה בוקר" - רשימה כוללת (בשורה אחת) של כל האמל"ח שביקשו באותו יום, על פני כל ההגשות.
+  function redContainerText(equipmentSummary) {
+    if (!equipmentSummary.length) return bdi('לא צוין');
+    return equipmentSummary
+      .map((i) => bdi(i.total > 0 ? `${i.total} ${i.name}` : i.name))
+      .join(', ');
+  }
+
+  // "מכולת טעינות" - פריטי טעינה קבועים (תמיד מופיעים) + פריטים שמופיעים רק אם בפועל ביקשו
+  // באמל"ח את הציוד התואם (למשל סוללות אלפא רק אם ביקשו אלפא, וכו').
+  function chargingContainerText(submissions, equipmentSummary) {
+    const parts = ['סוללות איבו'];
+    if (equipmentQtyFor(equipmentSummary, 'אלפא') > 0) parts.push('סוללות אלפא');
+    parts.push('פאוור בנק', 'קשרים');
+
+    const fpvBatteriesQty = ['סוללות שבוע C', 'סוללות B1', 'סוללות B2']
+      .reduce((sum, name) => sum + equipmentQtyFor(equipmentSummary, name), 0);
+    if (fpvBatteriesQty > 0) parts.push(`${fpvBatteriesQty} ברוסים סוללות FPV`);
+
+    parts.push('גנרטור קטן');
+
+    const bloatyQty = equipmentQtyFor(equipmentSummary, 'בלואטי');
+    if (bloatyQty > 0) parts.push(`${bloatyQty} בלואטי`);
+
+    const slaveQty = equipmentQtyFor(equipmentSummary, 'סלייב');
+    if (slaveQty > 0) parts.push(`${slaveQty} סלייב`);
+
+    // מטענים לסוללות אלפא נדרשים רק כשגם קורס "רגיל" וגם מטיס מבצעי ביקשו אלפא באותו יום.
+    const alphaFromOtherCourse = submissions.some((s) => s.courseName !== 'מטיס מבצעי' && hasEquipment(s, 'אלפא'));
+    const alphaFromOpFlight = submissions.some((s) => s.courseName === 'מטיס מבצעי' && hasEquipment(s, 'אלפא'));
+    if (alphaFromOtherCourse && alphaFromOpFlight) parts.push('מטענים של סוללות אלפא');
+
+    return parts.map((p) => bdi(p)).join(', ');
+  }
+
+  function coursesListSection(submissions) {
+    const seen = new Set();
+    const names = [];
+    submissions.forEach((s) => {
+      const name = (s.courseName || '').trim();
+      if (name && !seen.has(name)) {
+        seen.add(name);
+        names.push(name);
+      }
+    });
+    if (!names.length) return '';
+    const rows = names.map((n) => morningBulletRow(bdi(n))).join('');
     return `<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom:16px;border:1px solid #e6e9f0;border-radius:8px;overflow:hidden;">
       <tr><td style="padding:16px 20px;background:#ffffff;">
-        <div style="font-size:15px;font-weight:bold;color:#1a2233;margin-bottom:8px;">לוח פתיחת עמדות - בוקר</div>
+        <div style="font-size:15px;font-weight:bold;color:#1a2233;margin-bottom:8px;">קורסים</div>
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">${rows}</table>
       </td></tr>
     </table>`;
+  }
+
+  function morningBox(submissions) {
+    const withTime = submissions.filter((s) => s.startTime);
+    const sortedByTime = [...withTime].sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
+    const equipmentSummary = summarizeItems(submissions, 'equipmentItems');
+
+    const bullets = [
+      morningBulletRow('השלמת פערים בעמדת קפה - כוסות חם/קר, כפיות, קפה.'),
+      morningBulletRow('משיכת פריסה וקפה מהמטבח לשטח.'),
+      morningBulletRow(`מכולה אדומה בוקר - ${redContainerText(equipmentSummary)}`),
+      morningBulletRow(`מכולת טעינות - ${chargingContainerText(submissions, equipmentSummary)}`),
+      ...sortedByTime.map((s) => morningBulletRow(scheduleRowText(s))),
+    ].join('');
+
+    return `<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom:16px;border:1px solid #e6e9f0;border-radius:8px;overflow:hidden;">
+      <tr><td style="padding:16px 20px;background:#ffffff;">
+        <div style="font-size:15px;font-weight:bold;color:#1a2233;margin-bottom:8px;">בוקר - הגעה ב-08:00</div>
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">${bullets}</table>
+      </td></tr>
+    </table>`;
+  }
+
+  // סעיפים שהתוכן שלהם לא נגזר מהטופס (שיבוץ ידני של רכבים/כוח אדם/כיתות וכו') - מוצגת
+  // רק הכותרת, שהמנהל ימלא לפי הצורך.
+  function emptySectionBox(title) {
+    return `<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom:16px;border:1px solid #e6e9f0;border-radius:8px;overflow:hidden;">
+      <tr><td style="padding:16px 20px;background:#ffffff;">
+        <div style="font-size:15px;font-weight:bold;color:#1a2233;">${escapeHtml(title)}</div>
+      </td></tr>
+    </table>`;
+  }
+
+  // מיגון ואישורי הנסיעות קבועים ולא תלויים בטופס - מועתקים כמו שהם בכל דוח.
+  function migunBox() {
+    return `<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom:16px;border:1px solid #e6e9f0;border-radius:8px;overflow:hidden;">
+      <tr><td style="padding:16px 20px;background:#ffffff;">
+        <div style="font-size:15px;font-weight:bold;color:#1a2233;margin-bottom:8px;">מיגון</div>
+        <div style="font-size:13px;color:#1a2233;line-height:1.6;">
+          ע״ב מיגון אישי - שכפ״צ + קסדה - בזמן התראה נכנסים למיגונית.<br>
+          <br>
+          חובש - אין<br>
+          נהג פינוי - מנשה<br>
+          נע״ת בטיחות וכיבוי אש - מנשה
+        </div>
+      </td></tr>
+    </table>`;
+  }
+
+  function travelApprovalsBox() {
+    return `<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom:16px;border:1px solid #e6e9f0;border-radius:8px;overflow:hidden;">
+      <tr><td style="padding:16px 20px;background:#ffffff;">
+        <div style="font-size:15px;font-weight:bold;color:#1a2233;margin-bottom:8px;">אישורי נסיעות</div>
+        <div style="font-size:13px;color:#1a2233;line-height:1.6;">
+          רכבי הלוגיסטיקה ינועו מהבא״פ לשטחי האש - מטיס 1, מטיס 3, בארי, גבעת הלוס, לשבייה, תדלוק בתחנת הדלק במידת הצורך.<br>
+          פתיחת כרטיסי עבודה בפלאפון, תחילת נסיעה לאחר חתימה של מפקד משלח.<br>
+          העברת כרטיס חוגר / קופ״ח חובה.<br>
+          אורות דולקים ברכבים חובה.<br>
+          נסיעה זהירה לפי תנאי הדרך.
+        </div>
+      </td></tr>
+    </table>`;
+  }
+
+  function goodLuckFooter() {
+    return `<div style="text-align:center;font-size:16px;font-weight:bold;color:#3457d5;margin:12px 0;">בהצלחה!!!</div>`;
+  }
+
+  function buildMorningTasksSection(submissions) {
+    if (!submissions.length) return '';
+    return `
+      ${coursesListSection(submissions)}
+      ${morningBox(submissions)}
+      ${emptySectionBox('עמדות למחר')}
+      ${emptySectionBox('כיתות')}
+      ${emptySectionBox('רכבים')}
+      ${emptySectionBox('משימות למחר')}
+      ${emptySectionBox('כוח אדם')}
+      ${migunBox()}
+      ${travelApprovalsBox()}
+      ${goodLuckFooter()}
+    `;
   }
 
   function buildEmailHtml(submissions, { title } = {}) {
@@ -434,7 +570,7 @@
     });
     const lateCount = sorted.filter(isLate).length;
     const generatedAt = fmtDateTimeHe(new Date());
-    const scheduleHtml = buildMorningScheduleSection(sorted);
+    const scheduleHtml = buildMorningTasksSection(sorted);
     const body = sorted.length
       ? sorted.map((s, i) => emailSubmissionBlock(s, i + 1)).join('')
       : `<div style="text-align:center;color:#667085;padding:20px;font-size:13px;">אין דרישות להצגה</div>`;
