@@ -19,6 +19,13 @@
   const locationOtherField = document.getElementById('locationOtherField');
   const locationOther = document.getElementById('locationOther');
   const submitterNameInput = document.getElementById('submitterName');
+  const cloneLastFieldWrap = document.getElementById('cloneLastFieldWrap');
+  const cloneLastBtn = document.getElementById('cloneLastBtn');
+  const cloneLastMsg = document.getElementById('cloneLastMsg');
+
+  function getCurrentCourseName() {
+    return courseNameSelect.value === 'אחר' ? courseNameOther.value.trim() : courseNameSelect.value;
+  }
 
   loginBtn.addEventListener('click', async () => {
     loginError.style.display = 'none';
@@ -57,10 +64,17 @@
     traineesCountSelect.appendChild(opt);
   }
 
+  function updateCloneButtonVisibility() {
+    cloneLastFieldWrap.classList.toggle('hidden', !getCurrentCourseName());
+    cloneLastMsg.classList.add('hidden');
+  }
+
   courseNameSelect.addEventListener('change', () => {
     courseNameOtherField.classList.toggle('hidden', courseNameSelect.value !== 'אחר');
     applyCourseDefaults(courseNameSelect.value);
+    updateCloneButtonVisibility();
   });
+  courseNameOther.addEventListener('input', updateCloneButtonVisibility);
 
   locationSelect.addEventListener('change', () => {
     locationOtherField.classList.toggle('hidden', locationSelect.value !== 'אחר');
@@ -244,7 +258,7 @@
     equipmentOtherQty.value = '';
   }
 
-  function addItemRow(containerId) {
+  function addItemRow(containerId, prefill) {
     const container = document.getElementById(containerId);
 
     const row = document.createElement('div');
@@ -290,6 +304,14 @@
     qtyLine.append(qtyInput, removeBtn);
     row.append(select, otherInput, qtyLine);
     container.appendChild(row);
+
+    if (prefill && prefill.name) {
+      const isKnown = ITEM_OPTIONS[containerId].includes(prefill.name);
+      select.value = isKnown ? prefill.name : 'אחר';
+      otherInput.classList.toggle('hidden', isKnown);
+      if (!isKnown) otherInput.value = prefill.name;
+      qtyInput.value = prefill.qty && prefill.qty !== '-' ? prefill.qty : '';
+    }
   }
 
   document.querySelectorAll('.add-item-btn').forEach((btn) => {
@@ -315,6 +337,91 @@
       })
       .filter((item) => item.name);
   }
+
+  // "שכפל את ההגשה האחרונה שלי לקורס הזה" - מסייע למדריך שמלמד אותו קורס שוב ושוב, בלי
+  // למלא הכל מאפס בכל פעם. לא מעתיק את תאריך הקורס עצמו בכוונה - זה תמיד תאריך חדש.
+  cloneLastBtn.addEventListener('click', async () => {
+    const courseName = getCurrentCourseName();
+    const currentUser = window.auth.currentUser;
+    if (!courseName || !currentUser) return;
+
+    cloneLastMsg.classList.remove('hidden');
+    cloneLastMsg.textContent = 'מחפש הגשה קודמת...';
+    cloneLastBtn.disabled = true;
+    try {
+      const snapshot = await window.db.collection('submissions')
+        .where('submitterEmail', '==', currentUser.email)
+        .get();
+      const last = snapshot.docs
+        .map((doc) => doc.data())
+        .filter((d) => (d.courseName || '') === courseName)
+        .sort((a, b) => (b.courseDate || '').localeCompare(a.courseDate || ''))[0];
+
+      if (!last) {
+        cloneLastMsg.textContent = 'לא נמצאה הגשה קודמת שלך לקורס הזה.';
+        return;
+      }
+
+      document.getElementById('traineesCount').value = last.traineesCount || '';
+      document.getElementById('startTime').value = last.startTime || '';
+      document.getElementById('endTime').value = last.endTime || '';
+
+      const knownLocations = Array.from(locationSelect.options).map((o) => o.value);
+      if (last.location && !knownLocations.includes(last.location)) {
+        locationSelect.value = 'אחר';
+        locationOther.value = last.location;
+        locationOtherField.classList.remove('hidden');
+      } else {
+        locationSelect.value = last.location || '';
+        locationOther.value = '';
+        locationOtherField.classList.add('hidden');
+      }
+
+      needsClassroom.checked = !!last.needsClassroom;
+      classroomHoursField.classList.toggle('hidden', !last.needsClassroom);
+      const [classroomStart, classroomEnd] = (last.classroomHours || '').split('-');
+      document.getElementById('classroomStartTime').value = classroomStart || '';
+      document.getElementById('classroomEndTime').value = classroomEnd || '';
+
+      resetEquipmentGrid();
+      (last.equipmentItems || []).forEach(({ name, qty }) => {
+        if (!name) return;
+        if (!EQUIPMENT_ITEMS.includes(name)) {
+          const otherChip = findChipByName('אחר');
+          if (otherChip) otherChip.classList.add('selected');
+          equipmentOtherField.classList.remove('hidden');
+          equipmentOtherName.value = name;
+          equipmentOtherQty.value = qty && qty !== '-' ? qty : '';
+          return;
+        }
+        const chip = findChipByName(name);
+        if (!chip) return;
+        chip.classList.add('selected');
+        const qtyInput = chip.querySelector('.chip-qty');
+        if (qtyInput) {
+          qtyInput.classList.remove('hidden');
+          if (qty && qty !== '-') qtyInput.value = qty;
+        }
+      });
+
+      const logisticsContainer = document.getElementById('logisticsItems');
+      logisticsContainer.innerHTML = '';
+      const logisticsItems = (last.logisticsItems || []).filter((i) => i && i.name);
+      if (logisticsItems.length) {
+        logisticsItems.forEach((item) => addItemRow('logisticsItems', item));
+      } else {
+        addItemRow('logisticsItems');
+      }
+
+      document.getElementById('notes').value = last.notes || '';
+
+      cloneLastMsg.textContent = `שוכפלה ההגשה האחרונה (מ-${last.courseDate || '?'}) - נא לוודא ולעדכן תאריך קורס.`;
+    } catch (err) {
+      cloneLastMsg.textContent = 'שגיאה בשליפת ההגשה הקודמת: ' + err.message;
+    } finally {
+      cloneLastBtn.disabled = false;
+    }
+  });
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
