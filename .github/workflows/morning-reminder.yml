@@ -1,0 +1,22 @@
+name: Morning missing-submission reminders
+
+on:
+  # אין schedule מובנה בכוונה (ראו ההערה ב-email-daily-report.yml) - זה מופעל כל בוקר
+  # ע"י Google Apps Script חיצוני שקורא ל-workflow_dispatch (ראו תיעוד הפרויקט).
+  workflow_dispatch: {}
+
+jobs:
+  send-reminders:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: node scripts/send-morning-reminder.js
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          ROSTER_SHEET_CSV_URL: ${{ vars.ROSTER_SHEET_CSV_URL }}
