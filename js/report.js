@@ -425,39 +425,57 @@
       .some((i) => i && (i.name || '').trim() === name);
   }
 
-  // "מכולה אדומה בוקר" - רשימה כוללת (בשורה אחת) של כל האמל"ח שביקשו באותו יום, על פני כל ההגשות.
-  function redContainerText(equipmentSummary) {
-    if (!equipmentSummary.length) return bdi('לא צוין');
+  // "מכולה אדומה בוקר" (מכולת אמל"ח) - כל האמל"ח שביקשו באותו יום, למעט סוללות: אלו שייכות
+  // בפועל למכולת הטעינות (הלבנה), לא לאמל"ח, אז לא כפילים אותן כאן.
+  function redContainerItems(equipmentSummary) {
     return equipmentSummary
-      .map((i) => bdi(i.total > 0 ? `${i.total} ${i.name}` : i.name))
-      .join(', ');
+      .filter((i) => !i.name.startsWith('סוללות'))
+      .map((i) => bdi(i.total > 0 ? `${i.total} ${i.name}` : i.name));
   }
 
-  // "מכולת טעינות" - פריטי טעינה קבועים (תמיד מופיעים) + פריטים שמופיעים רק אם בפועל ביקשו
-  // באמל"ח את הציוד התואם (למשל סוללות אלפא רק אם ביקשו אלפא, וכו').
-  function chargingContainerText(submissions, equipmentSummary) {
-    const parts = ['סוללות איבו'];
-    if (equipmentQtyFor(equipmentSummary, 'אלפא') > 0) parts.push('סוללות אלפא');
-    parts.push('פאוור בנק', 'קשרים');
+  // "מכולת טעינות" (מכולה לבנה) - פריטי טעינה קבועים (תמיד מופיעים) + פריטים שמופיעים רק אם
+  // בפועל ביקשו באמל"ח את הציוד התואם (למשל סוללות אלפא רק אם ביקשו אלפא, וכו').
+  function chargingContainerItems(submissions, equipmentSummary) {
+    const items = ['סוללות איבו'];
+    if (equipmentQtyFor(equipmentSummary, 'אלפא') > 0) items.push('סוללות אלפא');
+    items.push('פאוור בנק', 'קשרים');
 
     const fpvBatteriesQty = ['סוללות שבוע C', 'סוללות B1', 'סוללות B2']
       .reduce((sum, name) => sum + equipmentQtyFor(equipmentSummary, name), 0);
-    if (fpvBatteriesQty > 0) parts.push(`${fpvBatteriesQty} ברוסים סוללות FPV`);
+    if (fpvBatteriesQty > 0) items.push(`${fpvBatteriesQty} ברוסים סוללות FPV`);
 
-    parts.push('גנרטור קטן');
+    const pk100Qty = equipmentQtyFor(equipmentSummary, 'סוללות פלייקארט 100');
+    if (pk100Qty > 0) items.push(`${pk100Qty} סוללות פלייקארט 100`);
+    const pk30Qty = equipmentQtyFor(equipmentSummary, 'סוללות פלייקארט 30');
+    if (pk30Qty > 0) items.push(`${pk30Qty} סוללות פלייקארט 30`);
+
+    items.push('גנרטור קטן');
 
     const bloatyQty = equipmentQtyFor(equipmentSummary, 'בלואטי');
-    if (bloatyQty > 0) parts.push(`${bloatyQty} בלואטי`);
+    if (bloatyQty > 0) items.push(`${bloatyQty} בלואטי`);
 
     const slaveQty = equipmentQtyFor(equipmentSummary, 'סלייב');
-    if (slaveQty > 0) parts.push(`${slaveQty} סלייב`);
+    if (slaveQty > 0) items.push(`${slaveQty} סלייב`);
 
     // מטענים לסוללות אלפא נדרשים רק כשגם קורס "רגיל" וגם מטיס מבצעי ביקשו אלפא באותו יום.
     const alphaFromOtherCourse = submissions.some((s) => s.courseName !== 'מטיס מבצעי' && hasEquipment(s, 'אלפא'));
     const alphaFromOpFlight = submissions.some((s) => s.courseName === 'מטיס מבצעי' && hasEquipment(s, 'אלפא'));
-    if (alphaFromOtherCourse && alphaFromOpFlight) parts.push('מטענים של סוללות אלפא');
+    if (alphaFromOtherCourse && alphaFromOpFlight) items.push('מטענים של סוללות אלפא');
 
-    return parts.map((p) => bdi(p)).join(', ');
+    return items.map((p) => bdi(p));
+  }
+
+  // בונה כותרת מודגשת + רשימת פריטים מסורגת (במקום פסקה אחת ארוכה עם פסיקים) לתוך אותה
+  // טבלת "בוקר" - הרבה יותר קריא כשיש 10-15 פריטים בכל מכולה.
+  function containerItemsBlock(title, items) {
+    const header = `<tr><td style="padding:8px 0 2px;font-size:13px;color:#1a2233;font-weight:bold;" valign="top">• ${escapeHtml(title)}</td></tr>`;
+    if (!items.length) {
+      return `${header}<tr><td style="padding:0 0 4px 18px;font-size:13px;color:#9ca3af;" valign="top">לא צוין</td></tr>`;
+    }
+    const rows = items
+      .map((i) => `<tr><td style="padding:1px 0 1px 18px;font-size:13px;color:#1a2233;" valign="top">– ${i}</td></tr>`)
+      .join('');
+    return `${header}${rows}`;
   }
 
   function coursesListSection(submissions) {
@@ -488,8 +506,8 @@
     const bullets = [
       morningBulletRow('השלמת פערים בעמדת קפה - כוסות חם/קר, כפיות, קפה.'),
       morningBulletRow('משיכת פריסה וקפה מהמטבח לשטח.'),
-      morningBulletRow(`מכולה אדומה בוקר - ${redContainerText(equipmentSummary)}`),
-      morningBulletRow(`מכולת טעינות - ${chargingContainerText(submissions, equipmentSummary)}`),
+      containerItemsBlock('מכולה אדומה בוקר (מכולת אמל"ח)', redContainerItems(equipmentSummary)),
+      containerItemsBlock('מכולת טעינות (מכולה לבנה)', chargingContainerItems(submissions, equipmentSummary)),
       ...sortedByTime.map((s) => morningBulletRow(scheduleRowText(s))),
     ].join('');
 
