@@ -13,8 +13,19 @@ service cloud.firestore {
         && request.resource.data.courseDate is string
         && request.resource.data.courseDate.size() > 0;
 
-      // קריאה, עדכון ומחיקה מותרים רק למנהלים המורשים (כניסה עם Google), דרך עמוד /admin.html.
-      allow read, update, delete: if request.auth != null
+      // קריאה: מנהלים רואים הכל (עמוד /admin.html), וכל משתמש מחובר יכול לקרוא גם את
+      // ההגשות שהוא עצמו הגיש (נדרש לכפתור "שכפל את ההגשה האחרונה שלי" בטופס הציבורי).
+      allow read: if request.auth != null
+        && (
+          request.auth.token.email.lower() in [
+            "nohar.tzur@gmail.com",
+            "yonatan1279@gmail.com"
+          ]
+          || resource.data.submitterEmail == request.auth.token.email
+        );
+
+      // עדכון ומחיקה מותרים רק למנהלים המורשים.
+      allow update, delete: if request.auth != null
         && request.auth.token.email.lower() in [
           "nohar.tzur@gmail.com",
           "yonatan1279@gmail.com"
