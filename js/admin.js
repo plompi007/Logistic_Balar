@@ -425,4 +425,10 @@
     const url = URL.createObjectURL(blob);
     window.open(url, '_blank');
   });
+
+  // שליחת מייל דורשת את הגמייל/סוד ה-SMTP שקיימים רק כ-secrets ב-GitHub Actions, ולא
+  // ניתן וגם לא בטוח לחשוף אותם כאן - לכן הכפתור פותח את עמוד ההרצה של ה-workflow עצמו.
+  document.getElementById('sendFeedbackDigestBtn').addEventListener('click', () => {
+    window.open('https://github.com/plompi007/Logistic_Balar/actions/workflows/feedback-weekly-digest.yml', '_blank', 'noopener');
+  });
 })();
