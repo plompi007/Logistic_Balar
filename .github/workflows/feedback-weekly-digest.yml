@@ -1,12 +1,10 @@
 name: Weekly feedback digest
 
 on:
-  schedule:
-    # ימי ראשון בלבד, שתי שעות UTC לכיסוי שעון קיץ/חורף בישראל (09:00 IDT/IST).
-    # הסקריפט עצמו בודק שזה בדיוק יום ראשון 09:00 בישראל ומדלג בהרצה השנייה.
-    # הדקה 7 (לא 0) בכוונה - ראו הערה בקובץ email-daily-report.yml.
-    - cron: '7 6 * * 0'
-    - cron: '7 7 * * 0'
+  # כבוי - ראו ההערה המקבילה ב-email-daily-report.yml. התזמון בפועל דרך Apps Script חיצוני.
+  # schedule:
+  #   - cron: '7 6 * * 0'
+  #   - cron: '7 7 * * 0'
   workflow_dispatch: {} # מאפשר הרצה ידנית לבדיקה מטאב Actions
 
 jobs:
