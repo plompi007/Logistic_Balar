@@ -166,7 +166,8 @@
     <a href="admin.html" style="color: var(--muted); font-size: 0.85rem;">כניסת מנהל</a>
   </p>
 
-  <div style="text-align:center; margin-top: 10px;">
+  <div style="text-align:center; margin-top: 10px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+    <button type="button" id="enablePushBtn" class="btn btn-secondary" style="font-size:0.8rem; padding:8px 16px;">🔔 הפעל התראות</button>
     <button type="button" id="feedbackToggleBtn" class="btn btn-secondary" style="font-size:0.8rem; padding:8px 16px;">🐛 דיווח על באג / הצעת שיפור</button>
   </div>
 
@@ -194,6 +195,7 @@
 <script src="js/firebase-config.js"></script>
 <script src="js/firebase-init.js"></script>
 <script src="js/form.js"></script>
+<script src="js/push-subscribe.js"></script>
 <script src="js/pwa-register.js"></script>
 </body>
 </html>

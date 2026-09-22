@@ -4,7 +4,8 @@
 // מדריך מסוים רגיל להגיש, אז שולח לכולם כל יום עד שהם מגישים - עלול להיות מיותר בימים
 // שהם לא מלמדים בכלל, אבל לא דורש שום תחזוקה ידנית (לוח מדריכים וכו').
 const nodemailer = require('nodemailer');
-const { fetchTomorrowSubmissions, fetchKnownInstructors } = require('./lib/firestore');
+const { getDb, fetchTomorrowSubmissions, fetchKnownInstructors } = require('./lib/firestore');
+const { sendPushToEmail } = require('./lib/push');
 const { fmtDateHe } = require('../js/report.js');
 
 const FORM_URL = 'https://plompi007.github.io/Logistic_Balar/';
@@ -77,6 +78,7 @@ async function main() {
     return;
   }
 
+  const db = getDb();
   const dateHe = fmtDateHe(targetDate);
   for (const instructor of missing) {
     const html = buildReminderHtml(instructor.name, dateHe);
@@ -84,6 +86,11 @@ async function main() {
       to: instructor.email,
       subject: `תזכורת: דרישה לוגיסטית - ${dateHe}`,
       html,
+    });
+    await sendPushToEmail(db, instructor.email, {
+      title: 'תזכורת: דרישה לוגיסטית',
+      body: `טרם הגשת דרישה ליום ${dateHe}. יש להגיש עד 12:00.`,
+      url: FORM_URL,
     });
     console.log(`נשלחה תזכורת ל-${instructor.email}`);
   }

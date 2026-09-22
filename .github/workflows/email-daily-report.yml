@@ -26,5 +26,7 @@ jobs:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           EMAIL_TO: ${{ vars.EMAIL_TO }}
+          VAPID_PUBLIC_KEY: ${{ secrets.VAPID_PUBLIC_KEY }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
           # בהרצה ידנית (workflow_dispatch) שולח תמיד, גם אם השעה בישראל שונה מ-18:00 - נוח לבדיקה.
           FORCE_SEND: ${{ github.event_name == 'workflow_dispatch' && '1' || '' }}

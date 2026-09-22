@@ -2,11 +2,13 @@
 // רץ בתוך GitHub Actions (ראו .github/workflows/email-daily-report.yml).
 const nodemailer = require('nodemailer');
 const { currentJerusalemHour } = require('./lib/time');
-const { fetchTomorrowSubmissions, fetchManualNotes } = require('./lib/firestore');
+const { getDb, fetchTomorrowSubmissions, fetchManualNotes } = require('./lib/firestore');
+const { sendPushToEmail } = require('./lib/push');
 const { buildEmailHtml, fmtDateHe } = require('../js/report.js');
 
 const TARGET_HOUR = 18;
 const DEFAULT_RECIPIENT = 'yonatan1279@gmail.com';
+const FORM_URL = 'https://plompi007.github.io/Logistic_Balar/admin.html';
 
 async function sendEmail({ subject, html }) {
   const gmailUser = process.env.GMAIL_USER;
@@ -38,11 +40,24 @@ async function main() {
 
   const { targetDate, submissions } = await fetchTomorrowSubmissions();
   const manualNotes = await fetchManualNotes(targetDate);
-  const title = `דוח דרישות לוגיסטיות - קורסי ${fmtDateHe(targetDate)}`;
+  const dateHe = fmtDateHe(targetDate);
+  const title = `דוח דרישות לוגיסטיות - קורסי ${dateHe}`;
   const html = buildEmailHtml(submissions, { title, manualNotes });
 
   await sendEmail({ subject: title, html });
   console.log(`מייל נשלח בהצלחה (${submissions.length} דרישות ליום ${targetDate}).`);
+
+  const db = getDb();
+  const recipients = (process.env.EMAIL_TO || DEFAULT_RECIPIENT).split(',').map((e) => e.trim()).filter(Boolean);
+  await Promise.all(
+    recipients.map((email) =>
+      sendPushToEmail(db, email, {
+        title: 'דוח לוגיסטיקה מוכן',
+        body: `${submissions.length} דרישות לקורסי ${dateHe}.`,
+        url: FORM_URL,
+      })
+    )
+  );
 }
 
 main().catch((err) => {

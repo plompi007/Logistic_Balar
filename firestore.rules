@@ -55,5 +55,27 @@ service cloud.firestore {
           "yonatan1279@gmail.com"
         ];
     }
+
+    match /pushSubscriptions/{subId} {
+      // כל משתמש מחובר יכול לרשום מנוי push לעצמו (הפעלת התראות בטופס/בניהול).
+      allow create: if request.auth != null
+        && request.resource.data.userEmail == request.auth.token.email;
+
+      // קריאה: רק מנהלים (נדרש לסקריפטים המתוזמנים). מחיקה: המשתמש יכול לבטל מנוי משלו,
+      // וגם מנהלים - וכן הסקריפטים המתוזמנים (Service Account, עוקף rules) מנקים מנויים שפגו.
+      allow read: if request.auth != null
+        && request.auth.token.email.lower() in [
+          "nohar.tzur@gmail.com",
+          "yonatan1279@gmail.com"
+        ];
+      allow delete: if request.auth != null
+        && (
+          request.auth.token.email.lower() in [
+            "nohar.tzur@gmail.com",
+            "yonatan1279@gmail.com"
+          ]
+          || resource.data.userEmail == request.auth.token.email
+        );
+    }
   }
 }

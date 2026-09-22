@@ -10,6 +10,12 @@ function ensureInitialized() {
   initializeApp({ credential: cert(JSON.parse(serviceAccountJson)) });
 }
 
+// מאפשר למודולים אחרים (כמו lib/push.js) להשתמש באותו חיבור Firestore בלי לשכפל את האתחול.
+function getDb() {
+  ensureInitialized();
+  return getFirestore();
+}
+
 // שולף את הדרישות שהוגשו לקורסים של "מחר" (שעון ישראל).
 async function fetchTomorrowSubmissions() {
   ensureInitialized();
@@ -68,6 +74,7 @@ async function fetchKnownInstructors() {
 }
 
 module.exports = {
+  getDb,
   fetchTomorrowSubmissions,
   fetchRecentFeedback,
   fetchManualNotes,
