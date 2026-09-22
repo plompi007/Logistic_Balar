@@ -23,20 +23,9 @@ function currentJerusalemWeekday() {
   return days[fmt.format(new Date())];
 }
 
-const WEEKDAY_NAMES_HE = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
-
-// שם היום בעברית (ראשון..שבת) של "מחר" לפי שעון ישראל - למיפוי מול עמודת היום בגיליון המדריכים.
-function tomorrowJerusalemWeekdayHe() {
-  const now = new Date();
-  const jerusalemNow = new Date(now.toLocaleString('en-US', { timeZone: TIMEZONE }));
-  jerusalemNow.setDate(jerusalemNow.getDate() + 1);
-  return WEEKDAY_NAMES_HE[jerusalemNow.getDay()];
-}
-
 module.exports = {
   TIMEZONE,
   currentJerusalemHour,
   currentJerusalemWeekday,
   tomorrowJerusalemDateStr,
-  tomorrowJerusalemWeekdayHe,
 };

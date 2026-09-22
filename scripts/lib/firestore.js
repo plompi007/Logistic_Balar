@@ -50,4 +50,26 @@ async function fetchManualNotes(dateStr) {
   return doc.exists ? doc.data() : {};
 }
 
-module.exports = { fetchTomorrowSubmissions, fetchRecentFeedback, fetchManualNotes };
+// כל המדריכים הידועים למערכת - לפי אימיילים ייחודיים שהגישו אי-פעם דרישה כלשהי.
+async function fetchKnownInstructors() {
+  ensureInitialized();
+  const db = getFirestore();
+  const snapshot = await db.collection('submissions').get();
+  const byEmail = new Map();
+  snapshot.docs.forEach((doc) => {
+    const data = doc.data();
+    if (!data.submitterEmail) return;
+    const email = data.submitterEmail.toLowerCase();
+    if (!byEmail.has(email)) {
+      byEmail.set(email, { email: data.submitterEmail, name: data.submitterName || data.submitterEmail });
+    }
+  });
+  return Array.from(byEmail.values());
+}
+
+module.exports = {
+  fetchTomorrowSubmissions,
+  fetchRecentFeedback,
+  fetchManualNotes,
+  fetchKnownInstructors,
+};
