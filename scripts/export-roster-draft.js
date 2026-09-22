@@ -55,8 +55,12 @@ async function main() {
     lines.push([r.weekday, r.courseName, r.submitterName, r.submitterEmail].map(csvEscape).join(','));
   });
 
-  fs.writeFileSync('roster-draft.csv', lines.join('\n') + '\n', 'utf8');
+  const csv = lines.join('\n') + '\n';
+  fs.writeFileSync('roster-draft.csv', csv, 'utf8');
   console.log(`נוצרו ${rows.length} שורות בטיוטת הלוח.`);
+  console.log('---CSV-START---');
+  console.log(csv);
+  console.log('---CSV-END---');
 }
 
 main().catch((err) => {
