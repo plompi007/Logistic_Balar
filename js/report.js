@@ -82,7 +82,7 @@
         ['תאריך הקורס', escapeHtml(fmtDateHe(s.courseDate) || s.courseDate || '-')],
       ]),
       metaRow([
-        ['שעות הקורס', `${escapeHtml(s.startTime || '-')} – ${escapeHtml(s.endTime || '-')}`],
+        ['שעות הקורס (שטח)', `${escapeHtml(s.startTime || '-')} – ${escapeHtml(s.endTime || '-')}`],
         ['כמות חניכים', escapeHtml(s.traineesCount || '-')],
       ]),
       metaRow([
@@ -310,7 +310,7 @@
     const metaRows = [
       emailFieldRow('שם המדריך', bdi(s.submitterName || '-')),
       emailFieldRow('תאריך הקורס', escapeHtml(fmtDateHe(s.courseDate) || s.courseDate || '-')),
-      emailFieldRow('שעות הקורס', `${escapeHtml(s.startTime || '-')} - ${escapeHtml(s.endTime || '-')}`),
+      emailFieldRow('שעות הקורס (שטח)', `${escapeHtml(s.startTime || '-')} - ${escapeHtml(s.endTime || '-')}`),
       emailFieldRow('מיקום / עמדה', bdi(s.location || '-')),
       emailFieldRow('כמות חניכים', escapeHtml(s.traineesCount || '-')),
       emailFieldRow('צורך בכיתה', s.needsClassroom ? 'כן' : 'לא'),
