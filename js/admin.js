@@ -421,11 +421,28 @@
     }
   });
 
+  // פותחים את חלון הדוח באופן מיידי וסינכרוני עם הקליק (לפני כל await), וכותבים אליו את
+  // ה-HTML ישירות עם document.write במקום להשתמש ב-blob: URL + window.open(blobUrl) -
+  // ב-Safari באייפון window.open שמגיע אחרי await (כמו קריאת Firestore) נחסם בשקט כי
+  // "טביעת האצבע" של פעולת המשתמש כבר פגה, וגם כשהוא לא נחסם, ב-PWA שמותקן למסך הבית
+  // ה-blob: URL שנוצר בהקשר האפליקציה לא תמיד נגיש מהטאב החדש שנפתח.
+  function openReportWindow(reportWindow, html) {
+    if (!reportWindow) {
+      alert('הדפדפן חסם את פתיחת הדוח בחלון חדש. יש לאשר חלונות קופצים לאתר ולנסות שוב.');
+      return;
+    }
+    reportWindow.document.open();
+    reportWindow.document.write(html);
+    reportWindow.document.close();
+  }
+
   // עם תאריך מסונן - מייצא את גיליון "משימות לוגיסטיקה" (בוקר/צהריים/עמדות/כיתות) בדיוק
   // כמו שמופיע במייל הבוקר לאותו תאריך, כולל התוכן הידני שמולא עבורו. בלי סינון תאריך -
   // אין "יום אחד" ברור לגיליון הזה, אז נשאר דוח כרטיסי ההגשות הכללי הישן.
   exportBtn.addEventListener('click', async () => {
     const date = filterDate.value;
+    const reportWindow = window.open('', '_blank');
+
     if (date) {
       const items = allSubmissions.filter((i) => i.courseDate === date);
       const title = `משימות לוגיסטיקה - ${window.LogisticReport.fmtDateHe(date)}`;
@@ -437,14 +454,12 @@
         console.error('שגיאה בטעינת תוכן ידני לדוח:', err);
       }
       const html = window.LogisticReport.buildMorningTasksReportHtml(items, { title, manualNotes });
-      const blob = new Blob([html], { type: 'text/html' });
-      window.open(URL.createObjectURL(blob), '_blank');
+      openReportWindow(reportWindow, html);
       return;
     }
 
     const html = window.LogisticReport.buildReportHtml(allSubmissions, { title: 'דוח דרישות לוגיסטיות - כלל הקורסים' });
-    const blob = new Blob([html], { type: 'text/html' });
-    window.open(URL.createObjectURL(blob), '_blank');
+    openReportWindow(reportWindow, html);
   });
 
   // שליחת מייל דורשת את הגמייל/סוד ה-SMTP שקיימים רק כ-secrets ב-GitHub Actions, ולא
