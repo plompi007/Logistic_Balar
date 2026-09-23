@@ -45,14 +45,14 @@ function buildReminderHtml(instructorName, dateHe) {
     <tr><td align="center" style="padding:24px 12px;">
       <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:480px;font-family:Arial,Helvetica,sans-serif;">
         <tr><td style="background:#ffffff;border-radius:10px;overflow:hidden;padding:24px;">
-          <div style="font-size:18px;font-weight:bold;color:#3457d5;margin-bottom:12px;">תזכורת: דרישה לוגיסטית</div>
+          <div style="font-size:18px;font-weight:bold;color:#d63384;margin-bottom:12px;">תזכורת: דרישה לוגיסטית</div>
           <div style="font-size:14px;color:#1a2233;line-height:1.6;">
             שלום ${instructorName},<br><br>
             טרם נמצאה הגשת דרישה לוגיסטית על שמך ליום ${dateHe}.<br>
             אם אתה מלמד קורס מחר, יש להגיש עד השעה 12:00 היום. אם לא - אפשר להתעלם מההודעה.
           </div>
           <div style="margin-top:20px;">
-            <a href="${FORM_URL}" style="display:inline-block;background:#3457d5;color:#ffffff;text-decoration:none;padding:10px 22px;border-radius:8px;font-size:14px;font-weight:bold;">לטופס ההגשה</a>
+            <a href="${FORM_URL}" style="display:inline-block;background:#d63384;color:#ffffff;text-decoration:none;padding:10px 22px;border-radius:8px;font-size:14px;font-weight:bold;">לטופס ההגשה</a>
           </div>
         </td></tr>
       </table>

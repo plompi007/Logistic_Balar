@@ -1,15 +1,15 @@
 :root {
   --bg: #f4f6fb;
-  --bg-gradient: radial-gradient(circle at 20% -10%, #eaf0ff 0%, #f4f6fb 55%);
+  --bg-gradient: radial-gradient(circle at 20% -10%, #fdeef5 0%, #f4f6fb 55%);
   --card: #ffffff;
   --card-alt: #f8f9fc;
   --border: #dde1ea;
   --border-soft: #e7eaf1;
   --text: #1f2430;
   --muted: #6b7280;
-  --primary: #3457d5;
-  --primary-dark: #2c47b8;
-  --primary-soft: rgba(52, 87, 213, 0.1);
+  --primary: #d63384;
+  --primary-dark: #b02a6f;
+  --primary-soft: rgba(214, 51, 132, 0.1);
   --danger: #d5384f;
   --danger-soft: rgba(213, 56, 79, 0.08);
   --success: #0f9d68;
@@ -43,7 +43,7 @@ header.page-header h1 {
   margin: 0 0 6px;
   font-size: 1.7rem;
   font-weight: 700;
-  background: linear-gradient(90deg, #3457d5, #1f3a9e);
+  background: linear-gradient(90deg, #d63384, #a61e6d);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -176,7 +176,7 @@ input[type="date"], input[type="time"] { color-scheme: light; }
   font-weight: 700;
   line-height: 18px;
   text-align: center;
-  box-shadow: 0 2px 6px rgba(52, 87, 213, 0.5);
+  box-shadow: 0 2px 6px rgba(214, 51, 132, 0.5);
 }
 .chip-qty {
   font-size: 0.8rem;
@@ -199,7 +199,7 @@ input[type="date"], input[type="time"] { color-scheme: light; }
 .btn-primary {
   background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   color: #fff;
-  box-shadow: 0 4px 14px rgba(52, 87, 213, 0.3);
+  box-shadow: 0 4px 14px rgba(214, 51, 132, 0.3);
 }
 .btn-secondary { background: var(--primary-soft); color: var(--primary); }
 .btn-danger { background: var(--danger-soft); color: var(--danger); padding: 7px 12px; font-size: 0.85rem; }

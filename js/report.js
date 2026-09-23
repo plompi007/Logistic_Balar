@@ -144,8 +144,8 @@
 <style>
   :root {
     color-scheme: light;
-    --accent: #3457d5;
-    --accent-soft: #eaf0ff;
+    --accent: #d63384;
+    --accent-soft: #fdeef5;
     --ok: #0f9d68;
     --ok-soft: #e5f7ef;
     --late: #d5384f;
@@ -293,10 +293,10 @@
   function emailItemsBlock(title, items) {
     const clean = (Array.isArray(items) ? items : []).filter((i) => i && (i.name || '').trim());
     const rows = clean.length
-      ? clean.map((i) => `<div style="padding:2px 0;font-size:13px;color:#1a2233;">• ${bdi(i.name)} <span style="color:#3457d5;">(כמות: ${bdi(i.qty || '-')})</span></div>`).join('')
+      ? clean.map((i) => `<div style="padding:2px 0;font-size:13px;color:#1a2233;">• ${bdi(i.name)} <span style="color:#d63384;">(כמות: ${bdi(i.qty || '-')})</span></div>`).join('')
       : `<div style="font-size:13px;color:#9ca3af;">לא צוין</div>`;
     return `<div style="margin-top:12px;">
-      <div style="font-size:13px;font-weight:bold;color:#3457d5;margin-bottom:4px;">${escapeHtml(title)}</div>
+      <div style="font-size:13px;font-weight:bold;color:#d63384;margin-bottom:4px;">${escapeHtml(title)}</div>
       ${rows}
     </div>`;
   }
@@ -337,7 +337,7 @@
         ${emailItemsBlock('אמל"ח נדרש', s.equipmentItems)}
         ${emailItemsBlock('ציוד לוגיסטי נדרש', s.logisticsItems)}
         ${s.notes ? `<div style="margin-top:12px;padding-top:12px;border-top:1px solid #e6e9f0;">
-          <div style="font-size:13px;font-weight:bold;color:#3457d5;margin-bottom:4px;">הערות</div>
+          <div style="font-size:13px;font-weight:bold;color:#d63384;margin-bottom:4px;">הערות</div>
           <div style="font-size:13px;color:#1a2233;">${escapeHtml(s.notes)}</div>
         </div>` : ''}
         <div style="margin-top:12px;font-size:11px;color:#9ca3af;">הוגש בתאריך: ${escapeHtml(fmtDateTimeHe(s.submittedAt))}</div>
@@ -369,7 +369,7 @@
   function emailSummaryRow(name, valueText) {
     return `<tr>
       <td style="padding:5px 0;border-bottom:1px solid #e6e9f0;font-size:13px;color:#1a2233;" valign="top">${bdi(name)}</td>
-      <td align="left" style="padding:5px 0;border-bottom:1px solid #e6e9f0;font-size:13px;color:#3457d5;font-weight:bold;white-space:nowrap;" valign="top">${bdi(valueText)}</td>
+      <td align="left" style="padding:5px 0;border-bottom:1px solid #e6e9f0;font-size:13px;color:#d63384;font-weight:bold;white-space:nowrap;" valign="top">${bdi(valueText)}</td>
     </tr>`;
   }
 
@@ -407,7 +407,7 @@
     const allItems = [...(Array.isArray(s.equipmentItems) ? s.equipmentItems : []), ...(Array.isArray(s.logisticsItems) ? s.logisticsItems : [])];
     const items = scheduleItemsText(allItems);
     const itemsPart = items ? ` - ${items}` : '';
-    return `<span style="font-weight:bold;color:#3457d5;">בשעה ${time}</span> פתיחת עמדות <span style="font-weight:bold;">${courseName}</span>${loc}${itemsPart}`;
+    return `<span style="font-weight:bold;color:#d63384;">בשעה ${time}</span> פתיחת עמדות <span style="font-weight:bold;">${courseName}</span>${loc}${itemsPart}`;
   }
 
   function morningBulletRow(html) {
@@ -566,7 +566,7 @@
   }
 
   function goodLuckFooter() {
-    return `<div style="text-align:center;font-size:16px;font-weight:bold;color:#3457d5;margin:12px 0;">בהצלחה!!!</div>`;
+    return `<div style="text-align:center;font-size:16px;font-weight:bold;color:#d63384;margin:12px 0;">בהצלחה!!!</div>`;
   }
 
   function buildMorningTasksSection(submissions, manualNotes) {
@@ -621,10 +621,10 @@
     <tr><td align="center" style="padding:24px 12px;">
       <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;font-family:Arial,Helvetica,sans-serif;">
         <tr><td style="text-align:center;padding-bottom:20px;">
-          <div style="font-size:20px;font-weight:bold;color:#3457d5;">${escapeHtml(title || 'דוח דרישות לוגיסטיות')}</div>
+          <div style="font-size:20px;font-weight:bold;color:#d63384;">${escapeHtml(title || 'דוח דרישות לוגיסטיות')}</div>
           <div style="font-size:12px;color:#667085;margin-top:4px;">נוצר בתאריך: ${generatedAt}</div>
           <div style="margin-top:10px;">
-            <span style="display:inline-block;background:#eaf0ff;color:#3457d5;font-size:12px;font-weight:bold;padding:4px 12px;border-radius:999px;margin:0 4px;">סה"כ דרישות: ${sorted.length}</span>
+            <span style="display:inline-block;background:#fdeef5;color:#d63384;font-size:12px;font-weight:bold;padding:4px 12px;border-radius:999px;margin:0 4px;">סה"כ דרישות: ${sorted.length}</span>
             <span style="display:inline-block;background:#fdeaee;color:#d5384f;font-size:12px;font-weight:bold;padding:4px 12px;border-radius:999px;margin:0 4px;">הוגשו באיחור: ${lateCount}</span>
           </div>
         </td></tr>
@@ -683,7 +683,7 @@
     <tr><td align="center" style="padding:24px 12px;">
       <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;font-family:Arial,Helvetica,sans-serif;">
         <tr><td style="text-align:center;padding-bottom:20px;">
-          <div style="font-size:20px;font-weight:bold;color:#3457d5;">${escapeHtml(title || 'דוח שבועי - באגים והצעות שיפור')}</div>
+          <div style="font-size:20px;font-weight:bold;color:#d63384;">${escapeHtml(title || 'דוח שבועי - באגים והצעות שיפור')}</div>
           <div style="font-size:12px;color:#667085;margin-top:4px;">נוצר בתאריך: ${generatedAt}</div>
           <div style="margin-top:10px;">
             <span style="display:inline-block;background:#fdeaee;color:#d5384f;font-size:12px;font-weight:bold;padding:4px 12px;border-radius:999px;margin:0 4px;">באגים: ${bugCount}</span>
