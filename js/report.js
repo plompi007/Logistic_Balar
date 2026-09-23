@@ -638,6 +638,51 @@
 </html>`;
   }
 
+  // גיליון "משימות לוגיסטיקה" (בוקר/צהריים/עמדות/כיתות וכו') כעמוד HTML עצמאי להדפסה/שמירה
+  // כ-PDF מעמוד הניהול - אותו תוכן שמופיע בתוך מייל הבוקר (buildMorningTasksSection), רק
+  // עטוף בעמוד משלו עם כפתור הדפסה, במקום קטע בתוך מייל.
+  function buildMorningTasksReportHtml(submissions, { title, manualNotes } = {}) {
+    const generatedAt = fmtDateTimeHe(new Date());
+    const scheduleHtml = buildMorningTasksSection(submissions, manualNotes)
+      || `<div style="text-align:center;color:#667085;padding:20px;font-size:13px;">אין דרישות ליום זה</div>`;
+
+    return `<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>${escapeHtml(title || 'משימות לוגיסטיקה')}</title>
+<style>
+  body { font-family: Arial, Helvetica, sans-serif; background: #eef1f7; margin: 0; padding: 24px 12px 60px; }
+  .wrap { max-width: 600px; margin: 0 auto; }
+  .header { text-align: center; padding-bottom: 20px; }
+  .header .title { font-size: 20px; font-weight: bold; color: #d63384; }
+  .header .meta { font-size: 12px; color: #667085; margin-top: 4px; }
+  .no-print { text-align: left; margin-bottom: 16px; }
+  .no-print button {
+    background: #d63384; color: #fff; border: none; padding: 10px 20px;
+    border-radius: 10px; cursor: pointer; font-size: 0.9rem; font-weight: 600; font-family: inherit;
+  }
+  @media print {
+    body { background: #fff; padding: 0; }
+    .no-print { display: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="no-print"><button onclick="window.print()">הדפסה / שמירה כ-PDF</button></div>
+    <div class="header">
+      <div class="title">${escapeHtml(title || 'משימות לוגיסטיקה')}</div>
+      <div class="meta">נוצר בתאריך: ${generatedAt}</div>
+    </div>
+    ${scheduleHtml}
+  </div>
+</body>
+</html>`;
+  }
+
   // דוח שבועי (מייל) של כל דיווחי הבאגים/הצעות השיפור שהתקבלו.
   function feedbackEntryBlock(entry, index) {
     const isBug = entry.type === 'bug';
@@ -698,5 +743,5 @@
 </html>`;
   }
 
-  return { buildReportHtml, buildEmailHtml, buildFeedbackDigestEmailHtml, isLate, deadlineFor, summarizeItems, fmtDateHe };
+  return { buildReportHtml, buildMorningTasksReportHtml, buildEmailHtml, buildFeedbackDigestEmailHtml, isLate, deadlineFor, summarizeItems, fmtDateHe };
 });

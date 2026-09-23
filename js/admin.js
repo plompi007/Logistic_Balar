@@ -413,17 +413,30 @@
     }
   });
 
-  exportBtn.addEventListener('click', () => {
-    const items = filterDate.value
-      ? allSubmissions.filter((i) => i.courseDate === filterDate.value)
-      : allSubmissions;
-    const title = filterDate.value
-      ? `דוח דרישות לוגיסטיות - קורסי ${window.LogisticReport.fmtDateHe(filterDate.value)}`
-      : 'דוח דרישות לוגיסטיות - כלל הקורסים';
-    const html = window.LogisticReport.buildReportHtml(items, { title });
+  // עם תאריך מסונן - מייצא את גיליון "משימות לוגיסטיקה" (בוקר/צהריים/עמדות/כיתות) בדיוק
+  // כמו שמופיע במייל הבוקר לאותו תאריך, כולל התוכן הידני שמולא עבורו. בלי סינון תאריך -
+  // אין "יום אחד" ברור לגיליון הזה, אז נשאר דוח כרטיסי ההגשות הכללי הישן.
+  exportBtn.addEventListener('click', async () => {
+    const date = filterDate.value;
+    if (date) {
+      const items = allSubmissions.filter((i) => i.courseDate === date);
+      const title = `משימות לוגיסטיקה - ${window.LogisticReport.fmtDateHe(date)}`;
+      let manualNotes = {};
+      try {
+        const doc = await window.db.collection('dailyNotes').doc(date).get();
+        if (doc.exists) manualNotes = doc.data();
+      } catch (err) {
+        console.error('שגיאה בטעינת תוכן ידני לדוח:', err);
+      }
+      const html = window.LogisticReport.buildMorningTasksReportHtml(items, { title, manualNotes });
+      const blob = new Blob([html], { type: 'text/html' });
+      window.open(URL.createObjectURL(blob), '_blank');
+      return;
+    }
+
+    const html = window.LogisticReport.buildReportHtml(allSubmissions, { title: 'דוח דרישות לוגיסטיות - כלל הקורסים' });
     const blob = new Blob([html], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
+    window.open(URL.createObjectURL(blob), '_blank');
   });
 
   // שליחת מייל דורשת את הגמייל/סוד ה-SMTP שקיימים רק כ-secrets ב-GitHub Actions, ולא
