@@ -348,18 +348,21 @@ tr.late td { background: rgba(213, 56, 79, 0.05); }
    הכל תחת body.form-theme בלבד, כדי לא להשפיע על עמוד הניהול.
    ============================================================ */
 body.form-theme {
-  --bg: #14171c;
-  --surface: #1c2029;
-  --surface-2: #232833;
-  --card: #1c2029;
-  --card-alt: #20242e;
-  --border: #3a4252;
-  --border-soft: #2a2f3a;
-  --text: #eef0f4;
-  --muted: #8b93a3;
-  --primary: #d4af37;
-  --primary-dark: #b8942a;
-  --primary-soft: rgba(212, 175, 55, 0.14);
+  /* פלטה חמה-כהה עם גוון ורוד-יין (לא אפור-כחול טהור) כדי שהוורוד ירגיש חלק מכל
+     הלוח ולא כמו נקודת צבע בודדת - קרוב לתאורת "שמירת ראיית לילה" האדומה/ורודה
+     שמשתמשים בה בתדרוכי טיסה בחושך, מותאם למבטא ורוד עדין ומקצועי במקום אדום בוהק. */
+  --bg: #170f13;
+  --surface: #1f151a;
+  --surface-2: #281a20;
+  --card: #1f151a;
+  --card-alt: #241820;
+  --border: #4a2f3a;
+  --border-soft: #33232a;
+  --text: #f3eef0;
+  --muted: #a58b96;
+  --primary: #ef6da0;
+  --primary-dark: #d6336c;
+  --primary-soft: rgba(239, 109, 160, 0.14);
   --danger: #f0656b;
   --danger-soft: rgba(240, 101, 107, 0.12);
   --success: #4caf7d;
@@ -368,7 +371,7 @@ body.form-theme {
   --font-display: 'IBM Plex Sans Hebrew', 'Heebo', sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
   font-family: var(--font-display);
-  background: radial-gradient(circle at 12% -15%, rgba(212, 175, 55, 0.08) 0%, transparent 45%), var(--bg);
+  background: radial-gradient(circle at 12% -15%, rgba(239, 109, 160, 0.10) 0%, transparent 45%), var(--bg);
 }
 
 body.form-theme header.page-header {
