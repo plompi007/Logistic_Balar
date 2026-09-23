@@ -153,6 +153,13 @@ input[type="date"], input[type="time"] { color-scheme: light; }
   font-weight: 500;
   text-align: center;
   transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+  /* בלי flex:1 הכפתור נשאר בגובה הטבעי שלו בתוך item-chip שהרשת מתחה לגובה השורה -
+     כשיש בשורה צ'יפ עם שם ארוך שנשבר לשתי שורות, הצ'יפים הקצרים לידו "צפים" למעלה
+     ומשאירים רווח ריק מתחתם. flex:1 גורם לכל הכפתורים באותה שורה למלא אותה בגובה שווה. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
 }
 .chip-toggle:hover { border-color: var(--primary); }
 .chip-toggle:active { transform: scale(0.96); }
