@@ -328,3 +328,209 @@ tr.late td { background: rgba(213, 56, 79, 0.05); }
   text-align: center;
 }
 #loginBox h2 { font-weight: 700; }
+
+/* ============================================================
+   טופס ציבורי - "לוח תדריך טיסה" (body.form-theme)
+   ---------------------------------------------------------------
+   העיצוב מבוסס על הזהות הקיימת של היחידה (הסמל השחור-זהב): רקע
+   גרפיט כהה כמו לוח תדריך/תא טייס, מבטא זהב מרוסן במקום הכחול/
+   הוורוד הגנרי, טיפוגרפיה טכנית (IBM Plex), ומספרים/שעות/כמויות
+   במונוספייס - כדי שהטופס ירגיש ככלי תפעולי רציני שממלאים בשטח,
+   לא כטופס-אתר גנרי. המסגרת "נועלת" סוגריים סביב שדה במיקוד, כמו
+   כוונת מצלמה - רגע העיצוב הבולט היחיד, קשור ישירות לעולם התוכן.
+   הכל תחת body.form-theme בלבד, כדי לא להשפיע על עמוד הניהול.
+   ============================================================ */
+body.form-theme {
+  --bg: #14171c;
+  --surface: #1c2029;
+  --surface-2: #232833;
+  --card: #1c2029;
+  --card-alt: #20242e;
+  --border: #3a4252;
+  --border-soft: #2a2f3a;
+  --text: #eef0f4;
+  --muted: #8b93a3;
+  --primary: #d4af37;
+  --primary-dark: #b8942a;
+  --primary-soft: rgba(212, 175, 55, 0.14);
+  --danger: #f0656b;
+  --danger-soft: rgba(240, 101, 107, 0.12);
+  --success: #4caf7d;
+  --success-soft: rgba(76, 175, 125, 0.12);
+  --shadow: none;
+  --font-display: 'IBM Plex Sans Hebrew', 'Heebo', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
+  font-family: var(--font-display);
+  background: radial-gradient(circle at 12% -15%, rgba(212, 175, 55, 0.08) 0%, transparent 45%), var(--bg);
+}
+
+body.form-theme header.page-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: start;
+  border-bottom: 1px solid var(--border-soft);
+  padding-bottom: 18px;
+}
+body.form-theme header.page-header .header-badge {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+}
+body.form-theme header.page-header h1 {
+  background: none;
+  -webkit-background-clip: unset;
+  background-clip: unset;
+  -webkit-text-fill-color: unset;
+  color: var(--text);
+  font-size: 1.35rem;
+  letter-spacing: -0.01em;
+}
+body.form-theme header.page-header p { text-align: start; }
+
+body.form-theme form {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 2px;
+  box-shadow: none;
+}
+
+body.form-theme fieldset {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-inline-start: 3px solid var(--primary);
+  border-radius: 2px;
+  padding: 18px 18px 16px;
+}
+body.form-theme legend {
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 0.98rem;
+  padding-inline-start: 10px;
+  padding-inline-end: 0;
+}
+
+body.form-theme input,
+body.form-theme textarea,
+body.form-theme select {
+  background: var(--surface-2);
+  color: var(--text);
+  border-color: var(--border);
+  border-radius: 2px;
+}
+body.form-theme input::placeholder,
+body.form-theme textarea::placeholder { color: var(--muted); opacity: 0.85; }
+body.form-theme input[type="date"],
+body.form-theme input[type="time"] { color-scheme: dark; }
+
+/* שעות, תאריכים וכמויות - במונוספיין, כמו קריאה ממחשב טיסה */
+body.form-theme input[type="date"],
+body.form-theme input[type="time"],
+body.form-theme .item-qty,
+body.form-theme .chip-qty,
+body.form-theme #traineesCount,
+body.form-theme #equipmentOtherQty {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+/* מיקוד בשדה "נועל" עליו סוגריים כמו כוונת מצלמה, במקום טבעת focus גנרית */
+body.form-theme .field { position: relative; }
+body.form-theme .field::before,
+body.form-theme .field::after {
+  content: '';
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border: 2px solid var(--primary);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+body.form-theme .field::before { top: -5px; inset-inline-start: -5px; border-inline-end: none; border-bottom: none; }
+body.form-theme .field::after { bottom: -5px; inset-inline-end: -5px; border-inline-start: none; border-top: none; }
+body.form-theme .field:focus-within::before,
+body.form-theme .field:focus-within::after { opacity: 1; }
+body.form-theme input:focus,
+body.form-theme textarea:focus,
+body.form-theme select:focus {
+  border-color: var(--primary);
+  box-shadow: none;
+}
+
+body.form-theme .chip-toggle {
+  border-radius: 3px;
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+body.form-theme .item-chip.selected .chip-toggle {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+body.form-theme .item-chip.selected::after {
+  background: var(--primary);
+  color: var(--bg);
+  box-shadow: none;
+}
+
+body.form-theme .btn { border-radius: 2px; }
+body.form-theme .btn-primary {
+  background: var(--primary);
+  color: var(--bg);
+  box-shadow: none;
+}
+body.form-theme .btn-primary:hover { filter: brightness(1.1); }
+body.form-theme .btn-secondary {
+  background: transparent;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+/* קו זהב יחיד בקצה העליון של סרגל השליחה - כמו קו אופק/מסלול המראה */
+body.form-theme .sticky-submit-bar {
+  background: var(--surface);
+  border-top: 2px solid var(--primary);
+  box-shadow: none;
+}
+
+body.form-theme #loginBox {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-inline-start: 3px solid var(--primary);
+  border-radius: 2px;
+  box-shadow: none;
+}
+
+body.form-theme #successMsg,
+body.form-theme #errorMsg {
+  border-radius: 2px;
+}
+
+body.form-theme .checkbox-field input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  position: relative;
+  cursor: pointer;
+}
+body.form-theme .checkbox-field input[type="checkbox"]:checked {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+body.form-theme .checkbox-field input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bg);
+  font-size: 13px;
+  font-weight: 700;
+}

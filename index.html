@@ -7,17 +7,17 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<meta name="theme-color" content="#d63384">
+<meta name="theme-color" content="#14171c">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="דרישות לוגיסטיות">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Hebrew:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="has-sticky-submit">
+<body class="has-sticky-submit form-theme">
 <div class="container">
 
   <div id="loginBox">
@@ -29,9 +29,12 @@
 
   <div id="formPanel" class="hidden">
   <header class="page-header">
-    <h1>בקשת דרישה לוגיסטית</h1>
-    <p>יש להגיש עד השעה 12:00 יום לפני הקורס</p>
-    <p style="font-size:0.8rem; margin-top:8px;">מחובר/ת כ-<span id="userEmailLabel"></span> · <a href="#" id="logoutLink" style="color:var(--muted);">התנתקות</a></p>
+    <img src="icons/icon-192.png" alt="" class="header-badge">
+    <div>
+      <h1>בקשת דרישה לוגיסטית</h1>
+      <p>יש להגיש עד השעה 12:00 יום לפני הקורס</p>
+      <p style="font-size:0.8rem; margin-top:8px;">מחובר/ת כ-<span id="userEmailLabel"></span> · <a href="#" id="logoutLink" style="color:var(--muted);">התנתקות</a></p>
+    </div>
   </header>
 
   <div id="successMsg">הדרישה נשלחה בהצלחה! תודה.</div>
@@ -171,7 +174,7 @@
     <button type="button" id="feedbackToggleBtn" class="btn btn-secondary" style="font-size:0.8rem; padding:8px 16px;">🐛 דיווח על באג / הצעת שיפור</button>
   </div>
 
-  <div id="feedbackForm" class="hidden" style="margin-top: 14px; background: var(--card-alt); border: 1px solid var(--border-soft); border-radius: 12px; padding: 16px;">
+  <div id="feedbackForm" class="hidden" style="margin-top: 14px; background: var(--card-alt); border: 1px solid var(--border-soft); border-radius: 2px; padding: 16px;">
     <div class="field">
       <label for="feedbackType">סוג</label>
       <select id="feedbackType">
