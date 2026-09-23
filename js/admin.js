@@ -211,15 +211,23 @@
 
   let allSubmissions = [];
 
+  // signInWithPopup נשבר ב-Safari באייפון כשהאתר מותקן כ-PWA למסך הבית (מצב standalone) -
+  // חלון ה-popup לא מצליח להעביר את תוצאת ההתחברות בחזרה לחלון ה-PWA, אז הכפתור פשוט לא
+  // עושה כלום. signInWithRedirect עובד בכל מקום כי הוא ניווט מלא באותו חלון/טאב, לא popup.
   loginBtn.addEventListener('click', async () => {
     loginError.style.display = 'none';
     try {
       const provider = new firebase.auth.GoogleAuthProvider();
-      await window.auth.signInWithPopup(provider);
+      await window.auth.signInWithRedirect(provider);
     } catch (err) {
       loginError.textContent = 'התחברות נכשלה: ' + err.message;
       loginError.style.display = 'block';
     }
+  });
+
+  window.auth.getRedirectResult().catch((err) => {
+    loginError.textContent = 'התחברות נכשלה: ' + err.message;
+    loginError.style.display = 'block';
   });
 
   logoutBtn.addEventListener('click', () => window.auth.signOut());
