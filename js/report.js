@@ -440,7 +440,7 @@
     if (equipmentQtyFor(equipmentSummary, 'אלפא') > 0) items.push('סוללות אלפא');
     items.push('פאוור בנק', 'קשרים');
 
-    const fpvBatteriesQty = ['סוללות שבוע C', 'סוללות B1', 'סוללות B2']
+    const fpvBatteriesQty = ['סוללות שבוע C', 'סוללות C2', 'סוללות B1', 'סוללות B2']
       .reduce((sum, name) => sum + equipmentQtyFor(equipmentSummary, name), 0);
     if (fpvBatteriesQty > 0) items.push(`${fpvBatteriesQty} ברוסים סוללות FPV`);
 
