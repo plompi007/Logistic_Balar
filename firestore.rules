@@ -24,8 +24,29 @@ service cloud.firestore {
           || resource.data.submitterEmail == request.auth.token.email
         );
 
-      // עדכון ומחיקה מותרים רק למנהלים המורשים.
-      allow update, delete: if request.auth != null
+      // עדכון: מנהלים יכולים לעדכן כל הגשה. משתמש רגיל יכול לערוך רק הגשה שהוא עצמו הגיש
+      // (submitterEmail לפני ואחרי העדכון חייב להישאר שלו - כדי שלא יוכל "לגנוב" הגשה של
+      // מישהו אחר או להעביר הגשה שלו למישהו אחר), ובכפוף לאותם שדות חובה בסיסיים כמו ביצירה.
+      allow update: if request.auth != null
+        && (
+          request.auth.token.email.lower() in [
+            "nohar.tzur@gmail.com",
+            "yonatan1279@gmail.com"
+          ]
+          || (
+            resource.data.submitterEmail == request.auth.token.email
+            && request.resource.data.submitterEmail == request.auth.token.email
+            && request.resource.data.courseName is string
+            && request.resource.data.courseName.size() > 0
+            && request.resource.data.submitterName is string
+            && request.resource.data.submitterName.size() > 0
+            && request.resource.data.courseDate is string
+            && request.resource.data.courseDate.size() > 0
+          )
+        );
+
+      // מחיקה מותרת רק למנהלים המורשים.
+      allow delete: if request.auth != null
         && request.auth.token.email.lower() in [
           "nohar.tzur@gmail.com",
           "yonatan1279@gmail.com"

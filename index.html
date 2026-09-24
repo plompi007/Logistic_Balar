@@ -37,6 +37,17 @@
     </div>
   </header>
 
+  <div id="mySubmissionsWrap" class="hidden" style="margin-bottom: 18px; background: var(--card-alt); border: 1px solid var(--border-soft); border-radius: 2px; padding: 16px;">
+    <h2 style="margin:0 0 10px; font-size:1rem;">ההגשות שלי</h2>
+    <p class="hint" id="mySubmissionsHint" style="margin:0 0 10px;">טוען...</p>
+    <div id="mySubmissionsList"></div>
+  </div>
+
+  <div id="editingBanner" class="hidden" style="margin-bottom: 14px; background: var(--primary-soft); color: var(--primary); border-radius: 2px; padding: 10px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+    <span id="editingBannerText">עורך/ת הגשה קיימת</span>
+    <button type="button" id="cancelEditBtn" class="btn btn-secondary" style="padding:6px 12px;font-size:0.8rem;">ביטול עריכה</button>
+  </div>
+
   <div id="successMsg">הדרישה נשלחה בהצלחה! תודה.</div>
   <div id="errorMsg"></div>
 
@@ -161,7 +172,7 @@
 
     <div class="sticky-submit-bar">
       <div class="sticky-submit-bar-inner">
-        <button type="submit" class="btn btn-primary btn-block">שליחת הדרישה</button>
+        <button type="submit" id="submitBtn" class="btn btn-primary btn-block">שליחת הדרישה</button>
       </div>
     </div>
   </form>

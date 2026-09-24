@@ -22,9 +22,35 @@
   const cloneLastFieldWrap = document.getElementById('cloneLastFieldWrap');
   const cloneLastBtn = document.getElementById('cloneLastBtn');
   const cloneLastMsg = document.getElementById('cloneLastMsg');
+  const mySubmissionsWrap = document.getElementById('mySubmissionsWrap');
+  const mySubmissionsHint = document.getElementById('mySubmissionsHint');
+  const mySubmissionsList = document.getElementById('mySubmissionsList');
+  const editingBanner = document.getElementById('editingBanner');
+  const editingBannerText = document.getElementById('editingBannerText');
+  const cancelEditBtn = document.getElementById('cancelEditBtn');
+  const submitBtn = document.getElementById('submitBtn');
+
+  // כש-editingId מוגדר, שליחת הטופס מעדכנת הגשה קיימת (שהמשתמש עצמו הגיש) במקום ליצור
+  // חדשה - ראו startEditSubmission ואת handler ה-submit של הטופס.
+  let editingId = null;
 
   function getCurrentCourseName() {
     return courseNameSelect.value === 'אחר' ? courseNameOther.value.trim() : courseNameSelect.value;
+  }
+
+  // ממפה ערך שמור (courseName/location) לתוך select+other-input: אם הערך מוכר מתוך
+  // אפשרויות ה-select נבחר ישירות, אחרת נבחר "אחר" והערך המקורי מוצג בשדה החופשי.
+  function applyKnownOrOther(selectEl, otherInput, otherFieldEl, value) {
+    const knownValues = Array.from(selectEl.options).map((o) => o.value).filter((v) => v);
+    if (value && !knownValues.includes(value)) {
+      selectEl.value = 'אחר';
+      otherInput.value = value;
+      otherFieldEl.classList.remove('hidden');
+    } else {
+      selectEl.value = value || '';
+      otherInput.value = '';
+      otherFieldEl.classList.add('hidden');
+    }
   }
 
   // signInWithPopup נשבר ב-Safari באייפון כשהאתר מותקן כ-PWA למסך הבית (מצב standalone) -
@@ -59,9 +85,12 @@
       if (!submitterNameInput.value && user.displayName) {
         submitterNameInput.value = user.displayName;
       }
+      loadMySubmissions();
     } else {
       loginBox.classList.remove('hidden');
       formPanel.classList.add('hidden');
+      exitEditMode();
+      mySubmissionsWrap.classList.add('hidden');
     }
   });
 
@@ -73,7 +102,7 @@
   }
 
   function updateCloneButtonVisibility() {
-    cloneLastFieldWrap.classList.toggle('hidden', !getCurrentCourseName());
+    cloneLastFieldWrap.classList.toggle('hidden', !!editingId || !getCurrentCourseName());
     cloneLastMsg.classList.add('hidden');
   }
 
@@ -287,6 +316,30 @@
     equipmentOtherQty.value = '';
   }
 
+  // מאכלס את גריד האמל"ח לפי רשימת פריטים שמורה (בשכפול הגשה קודמת או בעריכת הגשה קיימת).
+  function applyEquipmentItems(items) {
+    resetEquipmentGrid();
+    (items || []).forEach(({ name, qty }) => {
+      if (!name) return;
+      if (!EQUIPMENT_ITEMS.includes(name)) {
+        const otherChip = findChipByName('אחר');
+        if (otherChip) otherChip.classList.add('selected');
+        equipmentOtherField.classList.remove('hidden');
+        equipmentOtherName.value = name;
+        equipmentOtherQty.value = qty && qty !== '-' ? qty : '';
+        return;
+      }
+      const chip = findChipByName(name);
+      if (!chip) return;
+      chip.classList.add('selected');
+      const qtyInput = chip.querySelector('.chip-qty');
+      if (qtyInput) {
+        qtyInput.classList.remove('hidden');
+        if (qty && qty !== '-') qtyInput.value = qty;
+      }
+    });
+  }
+
   function addItemRow(containerId, prefill) {
     const container = document.getElementById(containerId);
 
@@ -367,6 +420,18 @@
       .filter((item) => item.name);
   }
 
+  // מאכלס את רשימת הציוד הלוגיסטי לפי רשימה שמורה - עם שורה ריקה אחת כברירת מחדל אם ריקה.
+  function applyLogisticsItems(items) {
+    const logisticsContainer = document.getElementById('logisticsItems');
+    logisticsContainer.innerHTML = '';
+    const filtered = (items || []).filter((i) => i && i.name);
+    if (filtered.length) {
+      filtered.forEach((item) => addItemRow('logisticsItems', item));
+    } else {
+      addItemRow('logisticsItems');
+    }
+  }
+
   // "שכפל את ההגשה האחרונה שלי לקורס הזה" - מסייע למדריך שמלמד אותו קורס שוב ושוב, בלי
   // למלא הכל מאפס בכל פעם. לא מעתיק את תאריך הקורס עצמו בכוונה - זה תמיד תאריך חדש.
   cloneLastBtn.addEventListener('click', async () => {
@@ -395,16 +460,7 @@
       document.getElementById('startTime').value = last.startTime || '';
       document.getElementById('endTime').value = last.endTime || '';
 
-      const knownLocations = Array.from(locationSelect.options).map((o) => o.value);
-      if (last.location && !knownLocations.includes(last.location)) {
-        locationSelect.value = 'אחר';
-        locationOther.value = last.location;
-        locationOtherField.classList.remove('hidden');
-      } else {
-        locationSelect.value = last.location || '';
-        locationOther.value = '';
-        locationOtherField.classList.add('hidden');
-      }
+      applyKnownOrOther(locationSelect, locationOther, locationOtherField, last.location);
 
       needsClassroom.checked = !!last.needsClassroom;
       classroomHoursField.classList.toggle('hidden', !last.needsClassroom);
@@ -412,35 +468,8 @@
       document.getElementById('classroomStartTime').value = classroomStart || '';
       document.getElementById('classroomEndTime').value = classroomEnd || '';
 
-      resetEquipmentGrid();
-      (last.equipmentItems || []).forEach(({ name, qty }) => {
-        if (!name) return;
-        if (!EQUIPMENT_ITEMS.includes(name)) {
-          const otherChip = findChipByName('אחר');
-          if (otherChip) otherChip.classList.add('selected');
-          equipmentOtherField.classList.remove('hidden');
-          equipmentOtherName.value = name;
-          equipmentOtherQty.value = qty && qty !== '-' ? qty : '';
-          return;
-        }
-        const chip = findChipByName(name);
-        if (!chip) return;
-        chip.classList.add('selected');
-        const qtyInput = chip.querySelector('.chip-qty');
-        if (qtyInput) {
-          qtyInput.classList.remove('hidden');
-          if (qty && qty !== '-') qtyInput.value = qty;
-        }
-      });
-
-      const logisticsContainer = document.getElementById('logisticsItems');
-      logisticsContainer.innerHTML = '';
-      const logisticsItems = (last.logisticsItems || []).filter((i) => i && i.name);
-      if (logisticsItems.length) {
-        logisticsItems.forEach((item) => addItemRow('logisticsItems', item));
-      } else {
-        addItemRow('logisticsItems');
-      }
+      applyEquipmentItems(last.equipmentItems);
+      applyLogisticsItems(last.logisticsItems);
 
       document.getElementById('notes').value = last.notes || '';
 
@@ -451,6 +480,100 @@
       cloneLastBtn.disabled = false;
     }
   });
+
+  // "ההגשות שלי" - רשימת כל ההגשות שהמשתמש המחובר הגיש בעצמו (permission תואמת ב-
+  // firestore.rules), עם כפתור עריכה לכל אחת. נטענת מחדש אחרי כל שליחה/עדכון מוצלחים.
+  async function loadMySubmissions() {
+    const currentUser = window.auth.currentUser;
+    if (!currentUser) return;
+
+    mySubmissionsWrap.classList.remove('hidden');
+    mySubmissionsHint.textContent = 'טוען...';
+    mySubmissionsList.innerHTML = '';
+    try {
+      const snapshot = await window.db.collection('submissions')
+        .where('submitterEmail', '==', currentUser.email)
+        .get();
+      const items = snapshot.docs
+        .map((doc) => ({ id: doc.id, data: doc.data() }))
+        .sort((a, b) => (b.data.courseDate || '').localeCompare(a.data.courseDate || ''));
+
+      if (!items.length) {
+        mySubmissionsHint.textContent = 'עדיין לא הגשת דרישות.';
+        return;
+      }
+      mySubmissionsHint.textContent = '';
+
+      items.forEach(({ id, data }) => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex; align-items:center; justify-content:space-between; '
+          + 'gap:10px; padding:8px 0; border-bottom:1px solid var(--border-soft);';
+
+        const label = document.createElement('span');
+        label.style.fontSize = '0.85rem';
+        label.textContent = `${data.courseName || ''} - ${data.courseDate || ''}`;
+
+        const editBtn = document.createElement('button');
+        editBtn.type = 'button';
+        editBtn.className = 'btn btn-secondary';
+        editBtn.style.cssText = 'padding:6px 12px; font-size:0.8rem; flex-shrink:0;';
+        editBtn.textContent = 'ערוך';
+        editBtn.addEventListener('click', () => startEditSubmission(id, data));
+
+        row.append(label, editBtn);
+        mySubmissionsList.appendChild(row);
+      });
+    } catch (err) {
+      mySubmissionsHint.textContent = 'שגיאה בטעינת ההגשות שלי: ' + err.message;
+    }
+  }
+
+  // עריכת הגשה קיימת: טוען את כל השדות של ההגשה השמורה לתוך הטופס הרגיל, ומסמן editingId
+  // כדי ש-submit יעדכן את ההגשה הקיימת (permission ב-firestore.rules) במקום ליצור חדשה.
+  function startEditSubmission(id, data) {
+    editingId = id;
+
+    submitterNameInput.value = data.submitterName || '';
+    applyKnownOrOther(courseNameSelect, courseNameOther, courseNameOtherField, data.courseName);
+    document.getElementById('courseDate').value = data.courseDate || '';
+    document.getElementById('traineesCount').value = data.traineesCount || '';
+    document.getElementById('startTime').value = data.startTime || '';
+    document.getElementById('endTime').value = data.endTime || '';
+    applyKnownOrOther(locationSelect, locationOther, locationOtherField, data.location);
+
+    needsClassroom.checked = !!data.needsClassroom;
+    classroomHoursField.classList.toggle('hidden', !data.needsClassroom);
+    const [classroomStart, classroomEnd] = (data.classroomHours || '').split('-');
+    document.getElementById('classroomStartTime').value = classroomStart || '';
+    document.getElementById('classroomEndTime').value = classroomEnd || '';
+
+    applyEquipmentItems(data.equipmentItems);
+    applyLogisticsItems(data.logisticsItems);
+
+    document.getElementById('notes').value = data.notes || '';
+
+    editingBannerText.textContent = `עורך/ת הגשה: ${data.courseName || ''} - ${data.courseDate || ''}`;
+    editingBanner.classList.remove('hidden');
+    updateCloneButtonVisibility();
+    submitBtn.textContent = 'עדכון הדרישה';
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function exitEditMode() {
+    editingId = null;
+    form.reset();
+    resetEquipmentGrid();
+    applyLogisticsItems([]);
+    classroomHoursField.classList.add('hidden');
+    courseNameOtherField.classList.add('hidden');
+    locationOtherField.classList.add('hidden');
+    editingBanner.classList.add('hidden');
+    submitBtn.textContent = 'שליחת הדרישה';
+    updateCloneButtonVisibility();
+  }
+
+  cancelEditBtn.addEventListener('click', exitEditMode);
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -501,33 +624,34 @@
       equipmentItems: collectEquipmentItems(),
       logisticsItems: collectItems('logisticsItems'),
       notes: document.getElementById('notes').value.trim(),
-      submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
     };
 
-    const submitBtn = form.querySelector('button[type="submit"]');
+    const isEditing = !!editingId;
     submitBtn.disabled = true;
-    submitBtn.textContent = 'שולח...';
+    submitBtn.textContent = isEditing ? 'מעדכן...' : 'שולח...';
 
     try {
-      await window.db.collection('submissions').add(payload);
+      if (isEditing) {
+        payload.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+        await window.db.collection('submissions').doc(editingId).update(payload);
+        successMsg.textContent = 'ההגשה עודכנה בהצלחה!';
+      } else {
+        payload.submittedAt = firebase.firestore.FieldValue.serverTimestamp();
+        await window.db.collection('submissions').add(payload);
+        successMsg.textContent = 'הדרישה נשלחה בהצלחה! תודה.';
+      }
 
-      form.reset();
-      resetEquipmentGrid();
-      document.getElementById('logisticsItems').innerHTML = '';
-      addItemRow('logisticsItems');
-      classroomHoursField.classList.add('hidden');
-      courseNameOtherField.classList.add('hidden');
-      locationOtherField.classList.add('hidden');
-
+      exitEditMode();
       successMsg.style.display = 'block';
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      loadMySubmissions();
     } catch (err) {
-      errorMsg.textContent = 'שגיאה בשליחה: ' + err.message;
+      errorMsg.textContent = (isEditing ? 'שגיאה בעדכון: ' : 'שגיאה בשליחה: ') + err.message;
       errorMsg.style.display = 'block';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       submitBtn.disabled = false;
-      submitBtn.textContent = 'שליחת הדרישה';
+      submitBtn.textContent = editingId ? 'עדכון הדרישה' : 'שליחת הדרישה';
     }
   });
 
