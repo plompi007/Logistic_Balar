@@ -55,12 +55,26 @@
 
   // signInWithPopup נשבר ב-Safari באייפון כשהאתר מותקן כ-PWA למסך הבית (מצב standalone) -
   // חלון ה-popup לא מצליח להעביר את תוצאת ההתחברות בחזרה לחלון ה-PWA, אז הכפתור פשוט לא
-  // עושה כלום. signInWithRedirect עובד בכל מקום כי הוא ניווט מלא באותו חלון/טאב, לא popup.
+  // עושה כלום. לכן במצב standalone עוברים ל-signInWithRedirect. אבל redirect לא תמיד עדיף:
+  // הוא עושה כמה ניתובים מלאים דרך דומיין ה-authDomain של Firebase (‎*.firebaseapp.com‎),
+  // ובדפדפנים עם הגנת מעקב אגרסיבית (Safari ITP ודומיו, גם בנייד וגם בדסקטופ) זה נתפס
+  // כ"bounce tracking" והדפדפן מוחק את האחסון הזמני של הדומיין הזה באמצע התהליך - מה שגורם
+  // ללולאה: בוחרים חשבון גוגל, זה "נטען", ואז חוזרים למסך ההתחברות בלי להתחבר בפועל.
+  // signInWithPopup לא סובל מהבעיה הזו כי התוצאה עוברת בין החלונות ישירות (postMessage),
+  // בלי ניתוב מרובה-קפיצות - ולכן הוא ברירת המחדל בכל מקרה שהוא כן עובד (טאב רגיל, לא PWA).
+  function isStandalonePwa() {
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  }
+
   loginBtn.addEventListener('click', async () => {
     loginError.style.display = 'none';
     try {
       const provider = new firebase.auth.GoogleAuthProvider();
-      await window.auth.signInWithRedirect(provider);
+      if (isStandalonePwa()) {
+        await window.auth.signInWithRedirect(provider);
+      } else {
+        await window.auth.signInWithPopup(provider);
+      }
     } catch (err) {
       loginError.textContent = 'התחברות נכשלה: ' + err.message;
       loginError.style.display = 'block';
