@@ -6,9 +6,18 @@
 const nodemailer = require('nodemailer');
 const { getDb, fetchTomorrowSubmissions, fetchKnownInstructors } = require('./lib/firestore');
 const { sendPushToEmail } = require('./lib/push');
+const { currentJerusalemWeekday } = require('./lib/time');
 const { fmtDateHe } = require('../js/report.js');
 
 const FORM_URL = 'https://plompi007.github.io/Logistic_Balar/';
+
+// אותם מנהלים כמו ADMIN_EMAILS ב-js/admin.js - הם לא מדריכים שאמורים להגיש דרישה, אז לא
+// שולחים להם תזכורת גם אם הם הגישו אי-פעם דרישה (ולכן מופיעים ברשימת המדריכים הידועים).
+const ADMIN_EMAILS = ['nohar.tzur@gmail.com', 'yonatan1279@gmail.com'];
+
+// 4 = חמישי, 5 = שישי (לפי currentJerusalemWeekday) - התזכורת היא על "מחר", וביום חמישי/שישי
+// "מחר" הוא יום שישי/שבת שבהם לא עובדים, אז אין טעם להזכיר.
+const SKIPPED_WEEKDAYS = new Set([4, 5]);
 
 async function sendReminder({ to, subject, html }) {
   const gmailUser = process.env.GMAIL_USER;
@@ -63,7 +72,14 @@ function buildReminderHtml(instructorName, dateHe) {
 }
 
 async function main() {
-  const instructors = await fetchKnownInstructors();
+  const weekday = currentJerusalemWeekday();
+  if (SKIPPED_WEEKDAYS.has(weekday) && !process.env.FORCE_SEND) {
+    console.log(`יום ${weekday} בישראל (חמישי/שישי) - מחר שישי/שבת, לא עובדים, לא נשלחות תזכורות.`);
+    return;
+  }
+
+  const instructors = (await fetchKnownInstructors())
+    .filter((i) => !ADMIN_EMAILS.includes(i.email.toLowerCase()));
   if (!instructors.length) {
     console.log('אין מדריכים ידועים במערכת - לא נשלחות תזכורות.');
     return;
