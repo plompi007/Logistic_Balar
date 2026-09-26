@@ -425,11 +425,17 @@
       .some((i) => i && (i.name || '').trim() === name);
   }
 
-  // "מכולה אדומה בוקר" (מכולת אמל"ח) - כל האמל"ח שביקשו באותו יום, למעט סוללות: אלו שייכות
-  // בפועל למכולת הטעינות (הלבנה), לא לאמל"ח, אז לא כפילים אותן כאן.
+  // פריטים ששייכים בפועל למכולת הטעינות (הלבנה) ולא למכולת האמל"ח (האדומה), גם אם הם
+  // נבחרים כאמל"ח בטופס: כל הסוללות, וגם בלואטי/סלייב (מוצגים ב-chargingContainerItems).
+  function isChargingOnlyEquipment(name) {
+    return name.startsWith('סוללות') || name === 'בלואטי' || name === 'סלייב';
+  }
+
+  // "מכולה אדומה בוקר" (מכולת אמל"ח) - כל האמל"ח שביקשו באותו יום, למעט הפריטים ששייכים
+  // בפועל למכולת הטעינות (הלבנה), כדי לא לכפול אותם.
   function redContainerItems(equipmentSummary) {
     return equipmentSummary
-      .filter((i) => !i.name.startsWith('סוללות'))
+      .filter((i) => !isChargingOnlyEquipment(i.name))
       .map((i) => bdi(i.total > 0 ? `${i.total} ${i.name}` : i.name));
   }
 
