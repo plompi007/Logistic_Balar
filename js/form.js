@@ -108,7 +108,7 @@
     }
   });
 
-  for (let i = 1; i <= 30; i++) {
+  for (let i = 1; i <= 100; i++) {
     const opt = document.createElement('option');
     opt.value = String(i);
     opt.textContent = String(i);
