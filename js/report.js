@@ -441,10 +441,13 @@
 
   // "מכולת טעינות" (מכולה לבנה) - פריטי טעינה קבועים (תמיד מופיעים) + פריטים שמופיעים רק אם
   // בפועל ביקשו באמל"ח את הציוד התואם (למשל סוללות אלפא רק אם ביקשו אלפא, וכו').
-  function chargingContainerItems(submissions, equipmentSummary) {
-    const items = ['סוללות איבו'];
+  // includeBaseline=false משמיט את הפריטים הקבועים (פאוור בנק/קשרים/גנרטור/סוללות איבו) -
+  // משמש לרשימת "הוצאה בשעה אחרת", כדי לא לכפול ציוד קבוע שכבר נטען בבוקר בכל מקרה.
+  function chargingContainerItems(submissions, equipmentSummary, { includeBaseline = true } = {}) {
+    const items = [];
+    if (includeBaseline) items.push('סוללות איבו');
     if (equipmentQtyFor(equipmentSummary, 'אלפא') > 0) items.push('סוללות אלפא');
-    items.push('פאוור בנק', 'קשרים');
+    if (includeBaseline) items.push('פאוור בנק', 'קשרים');
 
     const fpvBatteriesQty = ['סוללות שבוע C', 'סוללות C2', 'סוללות B1', 'סוללות B2']
       .reduce((sum, name) => sum + equipmentQtyFor(equipmentSummary, name), 0);
@@ -455,7 +458,7 @@
     const pk30Qty = equipmentQtyFor(equipmentSummary, 'סוללות פלייקארט 30');
     if (pk30Qty > 0) items.push(`${pk30Qty} סוללות פלייקארט 30`);
 
-    items.push('גנרטור קטן');
+    if (includeBaseline) items.push('גנרטור קטן');
 
     const bloatyQty = equipmentQtyFor(equipmentSummary, 'בלואטי');
     if (bloatyQty > 0) items.push(`${bloatyQty} בלואטי`);
@@ -504,16 +507,35 @@
     </table>`;
   }
 
+  // מעבר לשעה הזו קורס לא צריך שהציוד שלו כבר יהיה טעון במכולות הבוקר (07:45) - הציוד
+  // שלו מוצג בנפרד כ"הוצאה בשעה אחרת" ואפשר להוציא/לטעון אותו מאוחר יותר באותו יום.
+  const CONTAINER_CUTOFF_TIME = '10:00';
+
   function morningBox(submissions) {
     const withTime = submissions.filter((s) => s.startTime);
     const sortedByTime = [...withTime].sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
-    const equipmentSummary = summarizeItems(submissions, 'equipmentItems');
+
+    // קורסים בלי שעה ידועה נשארים במכולות הבוקר (ברירת מחדל בטוחה - עדיף לטעון ולא לחסר).
+    const earlySubmissions = submissions.filter((s) => !s.startTime || s.startTime < CONTAINER_CUTOFF_TIME);
+    const lateSubmissions = submissions.filter((s) => s.startTime && s.startTime >= CONTAINER_CUTOFF_TIME);
+
+    const equipmentSummary = summarizeItems(earlySubmissions, 'equipmentItems');
+    const lateEquipmentSummary = summarizeItems(lateSubmissions, 'equipmentItems');
+
+    const lateRedItems = redContainerItems(lateEquipmentSummary);
+    const lateChargingItems = chargingContainerItems(lateSubmissions, lateEquipmentSummary, { includeBaseline: false });
 
     const bullets = [
       morningBulletRow('השלמת פערים בעמדת קפה - כוסות חם/קר, כפיות, קפה.'),
       morningBulletRow('משיכת פריסה וקפה מהמטבח לשטח.'),
       containerItemsBlock('מכולה אדומה בוקר (מכולת אמל"ח)', redContainerItems(equipmentSummary)),
-      containerItemsBlock('מכולת טעינות (מכולה לבנה)', chargingContainerItems(submissions, equipmentSummary)),
+      containerItemsBlock('מכולת טעינות (מכולה לבנה)', chargingContainerItems(earlySubmissions, equipmentSummary)),
+      ...(lateRedItems.length || lateChargingItems.length
+        ? [
+            containerItemsBlock(`הוצאה בשעה אחרת (קורסים מ-${CONTAINER_CUTOFF_TIME} ואילך) - אמל"ח`, lateRedItems),
+            containerItemsBlock(`הוצאה בשעה אחרת (קורסים מ-${CONTAINER_CUTOFF_TIME} ואילך) - טעינות`, lateChargingItems),
+          ]
+        : []),
       ...sortedByTime.map((s) => morningBulletRow(scheduleRowText(s))),
     ].join('');
 
