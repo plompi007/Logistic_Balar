@@ -425,6 +425,26 @@
       .some((i) => i && (i.name || '').trim() === name);
   }
 
+  // בקורס "פלייקארט" - כשמסמנים גם "איבו", שדה הכמות שלו משמש בפועל לרישום מספרי הרחפנים
+  // המבצעיים שנלקחים (מופרדים בפסיק, למשל "2602,2758"), לא כמות לספירה. אוספים את המספרים
+  // עצמם כדי שיופיעו מפורשות במכולה האדומה (ולא רק "איבו" בלי שום ציון מה בפועל נלקח).
+  function flykartMissionDroneNumbers(submissions) {
+    const nums = [];
+    submissions
+      .filter((s) => s.courseName === 'פלייקארט')
+      .forEach((s) => {
+        const item = (Array.isArray(s.equipmentItems) ? s.equipmentItems : [])
+          .find((i) => i && (i.name || '').trim() === 'איבו');
+        if (!item) return;
+        String(item.qty || '')
+          .split(',')
+          .map((n) => n.trim())
+          .filter((n) => n && n !== '-')
+          .forEach((n) => nums.push(n));
+      });
+    return nums;
+  }
+
   // פריטים ששייכים בפועל למכולת הטעינות (הלבנה) ולא למכולת האמל"ח (האדומה), גם אם הם
   // נבחרים כאמל"ח בטופס: כל הסוללות, וגם בלואטי/סלייב (מוצגים ב-chargingContainerItems).
   function isChargingOnlyEquipment(name) {
@@ -433,10 +453,18 @@
 
   // "מכולה אדומה בוקר" (מכולת אמל"ח) - כל האמל"ח שביקשו באותו יום, למעט הפריטים ששייכים
   // בפועל למכולת הטעינות (הלבנה), כדי לא לכפול אותם.
-  function redContainerItems(equipmentSummary) {
-    return equipmentSummary
+  function redContainerItems(submissions, equipmentSummary) {
+    const flykartDrones = flykartMissionDroneNumbers(submissions);
+    // איבו בלי כמות מספרית (total===0) שמוסבר במלואו ע"י מספרי הרחפנים של פלייקארט - לא
+    // מציגים אותו כשורה ריקה/כללית בנפרד, כי הוא כבר מופיע בשורה הייעודית למטה.
+    const items = equipmentSummary
       .filter((i) => !isChargingOnlyEquipment(i.name))
+      .filter((i) => !(i.name === 'איבו' && i.total === 0 && flykartDrones.length > 0))
       .map((i) => bdi(i.total > 0 ? `${i.total} ${i.name}` : i.name));
+    if (flykartDrones.length) {
+      items.push(bdi(`(${flykartDrones.length}) רחפני משימה פלייקארט (${flykartDrones.join(',')})`));
+    }
+    return items;
   }
 
   // "מכולת טעינות" (מכולה לבנה) - פריטי טעינה קבועים (תמיד מופיעים) + פריטים שמופיעים רק אם
@@ -522,13 +550,13 @@
     const equipmentSummary = summarizeItems(earlySubmissions, 'equipmentItems');
     const lateEquipmentSummary = summarizeItems(lateSubmissions, 'equipmentItems');
 
-    const lateRedItems = redContainerItems(lateEquipmentSummary);
+    const lateRedItems = redContainerItems(lateSubmissions, lateEquipmentSummary);
     const lateChargingItems = chargingContainerItems(lateSubmissions, lateEquipmentSummary, { includeBaseline: false });
 
     const bullets = [
       morningBulletRow('השלמת פערים בעמדת קפה - כוסות חם/קר, כפיות, קפה.'),
       morningBulletRow('משיכת פריסה וקפה מהמטבח לשטח.'),
-      containerItemsBlock('מכולה אדומה בוקר (מכולת אמל"ח)', redContainerItems(equipmentSummary)),
+      containerItemsBlock('מכולה אדומה בוקר (מכולת אמל"ח)', redContainerItems(earlySubmissions, equipmentSummary)),
       containerItemsBlock('מכולת טעינות (מכולה לבנה)', chargingContainerItems(earlySubmissions, equipmentSummary)),
       ...(lateRedItems.length || lateChargingItems.length
         ? [
