@@ -346,9 +346,6 @@
   }
 
   // מסכם כמויות של פריט מסוים (equipmentItems / logisticsItems) על פני כל ההגשות יחד.
-  // שדה "כמות" משמש לפעמים לא כמספר אלא כטקסט חופשי (למשל מספרי רחפנים בפריטי "פליקן" -
-  // מה שבפועל ארוז בכל מכולה) - טקסט כזה נאסף ב-texts כדי שלא "ייעלם" בהצגה כ"unspecified"
-  // בלי שום תוכן.
   function summarizeItems(submissions, key) {
     const map = new Map();
     submissions.forEach((s) => {
@@ -356,19 +353,12 @@
       items.forEach((i) => {
         const name = (i && i.name || '').trim();
         if (!name) return;
-        const entry = map.get(name) || { name, total: 0, unspecified: 0, texts: [] };
-        const rawQty = String((i && i.qty) || '').trim();
-        // פריטי "פליקן ..." (מכולות ציוד קבועות וקבועות-שם) - שדה הכמות שלהם הוא בפועל
-        // תיאור חופשי (למשל מספרי רחפנים) ולא כמות לספירה, גם כשהטקסט נראה כמו מספר
-        // (מספר רחפן בודד, כמו "1948") - לכן אף פעם לא מתפרש כ"total" מספרי, אחרת
-        // מספר רחפן מספרי "בולע" בטעות כאילו יש כזאת כמות של הפריט.
-        const isFreeTextQtyItem = name.startsWith('פליקן ');
-        const qtyNum = isFreeTextQtyItem ? NaN : Number(rawQty);
+        const entry = map.get(name) || { name, total: 0, unspecified: 0 };
+        const qtyNum = Number(String((i && i.qty) || '').trim());
         if (Number.isFinite(qtyNum) && qtyNum > 0) {
           entry.total += qtyNum;
         } else {
           entry.unspecified += 1;
-          if (rawQty && rawQty !== '-') entry.texts.push(rawQty);
         }
         map.set(name, entry);
       });
@@ -389,9 +379,7 @@
       .map((i) => {
         const parts = [];
         if (i.total > 0) parts.push(`${i.total}`);
-        if (i.texts && i.texts.length) parts.push(i.texts.join(', '));
-        const unspecifiedNoText = i.unspecified - ((i.texts && i.texts.length) || 0);
-        if (unspecifiedNoText > 0) parts.push(`+${unspecifiedNoText} ללא כמות מצוינת`);
+        if (i.unspecified > 0) parts.push(`+${i.unspecified} ללא כמות מצוינת`);
         return emailSummaryRow(i.name, parts.join(' · ') || '-');
       })
       .join('');
@@ -448,10 +436,7 @@
   function redContainerItems(equipmentSummary) {
     return equipmentSummary
       .filter((i) => !isChargingOnlyEquipment(i.name))
-      .map((i) => {
-        if (i.texts && i.texts.length) return bdi(`${i.name} (${i.texts.join(', ')})`);
-        return bdi(i.total > 0 ? `${i.total} ${i.name}` : i.name);
-      });
+      .map((i) => bdi(i.total > 0 ? `${i.total} ${i.name}` : i.name));
   }
 
   // "מכולת טעינות" (מכולה לבנה) - פריטי טעינה קבועים (תמיד מופיעים) + פריטים שמופיעים רק אם
