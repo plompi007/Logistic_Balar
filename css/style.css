@@ -339,39 +339,37 @@ tr.late td { background: rgba(213, 56, 79, 0.05); }
 /* ============================================================
    טופס ציבורי - "לוח תדריך טיסה" (body.form-theme)
    ---------------------------------------------------------------
-   העיצוב מבוסס על הזהות הקיימת של היחידה (הסמל השחור-זהב): רקע
-   גרפיט כהה כמו לוח תדריך/תא טייס, מבטא זהב מרוסן במקום הכחול/
-   הוורוד הגנרי, טיפוגרפיה טכנית (IBM Plex), ומספרים/שעות/כמויות
-   במונוספייס - כדי שהטופס ירגיש ככלי תפעולי רציני שממלאים בשטח,
-   לא כטופס-אתר גנרי. המסגרת "נועלת" סוגריים סביב שדה במיקוד, כמו
-   כוונת מצלמה - רגע העיצוב הבולט היחיד, קשור ישירות לעולם התוכן.
+   העיצוב מבוסס על הזהות הקיימת של היחידה: מבטא ורוד-יין מרוסן,
+   טיפוגרפיה טכנית (IBM Plex), ומספרים/שעות/כמויות במונוספייס - כדי
+   שהטופס ירגיש ככלי תפעולי רציני שממלאים בשטח, לא כטופס-אתר גנרי.
+   המסגרת "נועלת" סוגריים סביב שדה במיקוד, כמו כוונת מצלמה - רגע
+   העיצוב הבולט היחיד, קשור ישירות לעולם התוכן.
+   הפלטה בהירה (לוח תדריך על דף לבן/ורוד בהיר ביום, לא תא טייס
+   בחושך) - אותה זהות ורודה, רק רקע בהיר לקריאות טובה יותר באור יום.
    הכל תחת body.form-theme בלבד, כדי לא להשפיע על עמוד הניהול.
    ============================================================ */
 body.form-theme {
-  /* פלטה חמה-כהה עם גוון ורוד-יין (לא אפור-כחול טהור) כדי שהוורוד ירגיש חלק מכל
-     הלוח ולא כמו נקודת צבע בודדת - קרוב לתאורת "שמירת ראיית לילה" האדומה/ורודה
-     שמשתמשים בה בתדרוכי טיסה בחושך, מותאם למבטא ורוד עדין ומקצועי במקום אדום בוהק. */
-  --bg: #170f13;
-  --surface: #1f151a;
-  --surface-2: #281a20;
-  --card: #1f151a;
-  --card-alt: #241820;
-  --border: #4a2f3a;
-  --border-soft: #33232a;
-  --text: #f3eef0;
-  --muted: #a58b96;
-  --primary: #ef6da0;
-  --primary-dark: #d6336c;
-  --primary-soft: rgba(239, 109, 160, 0.14);
-  --danger: #f0656b;
-  --danger-soft: rgba(240, 101, 107, 0.12);
-  --success: #4caf7d;
-  --success-soft: rgba(76, 175, 125, 0.12);
-  --shadow: none;
+  --bg: #fdf7f9;
+  --surface: #ffffff;
+  --surface-2: #fdf2f6;
+  --card: #ffffff;
+  --card-alt: #fdf7f9;
+  --border: #f1d9e3;
+  --border-soft: #f6e6ed;
+  --text: #2a1f24;
+  --muted: #8a7680;
+  --primary: #d6336c;
+  --primary-dark: #a61e5a;
+  --primary-soft: rgba(214, 51, 108, 0.1);
+  --danger: #d5384f;
+  --danger-soft: rgba(213, 56, 79, 0.08);
+  --success: #0f9d68;
+  --success-soft: rgba(15, 157, 104, 0.08);
+  --shadow: 0 8px 24px rgba(214, 51, 108, 0.08);
   --font-display: 'IBM Plex Sans Hebrew', 'Heebo', sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
   font-family: var(--font-display);
-  background: radial-gradient(circle at 12% -15%, rgba(239, 109, 160, 0.10) 0%, transparent 45%), var(--bg);
+  background: radial-gradient(circle at 12% -15%, rgba(214, 51, 108, 0.08) 0%, transparent 45%), var(--bg);
 }
 
 body.form-theme header.page-header {
@@ -404,7 +402,7 @@ body.form-theme form {
   background: var(--surface);
   border: 1px solid var(--border-soft);
   border-radius: 2px;
-  box-shadow: none;
+  box-shadow: var(--shadow);
 }
 
 body.form-theme fieldset {
@@ -433,7 +431,7 @@ body.form-theme select {
 body.form-theme input::placeholder,
 body.form-theme textarea::placeholder { color: var(--muted); opacity: 0.85; }
 body.form-theme input[type="date"],
-body.form-theme input[type="time"] { color-scheme: dark; }
+body.form-theme input[type="time"] { color-scheme: light; }
 
 /* שעות, תאריכים וכמויות - במונוספיין, כמו קריאה ממחשב טיסה */
 body.form-theme input[type="date"],
@@ -483,15 +481,15 @@ body.form-theme .item-chip.selected .chip-toggle {
 }
 body.form-theme .item-chip.selected::after {
   background: var(--primary);
-  color: var(--bg);
-  box-shadow: none;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(214, 51, 108, 0.35);
 }
 
 body.form-theme .btn { border-radius: 2px; }
 body.form-theme .btn-primary {
   background: var(--primary);
-  color: var(--bg);
-  box-shadow: none;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(214, 51, 108, 0.25);
 }
 body.form-theme .btn-primary:hover { filter: brightness(1.1); }
 body.form-theme .btn-secondary {
@@ -500,11 +498,11 @@ body.form-theme .btn-secondary {
   border: 1px solid var(--primary);
 }
 
-/* קו זהב יחיד בקצה העליון של סרגל השליחה - כמו קו אופק/מסלול המראה */
+/* קו ורוד יחיד בקצה העליון של סרגל השליחה - כמו קו אופק/מסלול המראה */
 body.form-theme .sticky-submit-bar {
   background: var(--surface);
   border-top: 2px solid var(--primary);
-  box-shadow: none;
+  box-shadow: 0 -6px 20px rgba(214, 51, 108, 0.08);
 }
 
 body.form-theme #loginBox {
@@ -512,7 +510,7 @@ body.form-theme #loginBox {
   border: 1px solid var(--border-soft);
   border-inline-start: 3px solid var(--primary);
   border-radius: 2px;
-  box-shadow: none;
+  box-shadow: var(--shadow);
 }
 
 body.form-theme #successMsg,
