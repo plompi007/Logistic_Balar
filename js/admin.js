@@ -280,6 +280,14 @@
     return `<bdi>${escapeHtml(str)}</bdi>`;
   }
 
+  // מרכז רשימת פריטים (equipmentItems/logisticsItems) לטקסט קריא אחד לתא הטבלה, כדי שכל
+  // הפרטים יופיעו ישירות בטבלה/בכרטיס בנייד בלי ללחוץ "ערוך".
+  function itemsSummaryText(items) {
+    const clean = (Array.isArray(items) ? items : []).filter((i) => i && (i.name || '').trim());
+    if (!clean.length) return '-';
+    return clean.map((i) => (i.qty && i.qty !== '-' ? `${i.name} (${i.qty})` : i.name)).join(', ');
+  }
+
   // מזהה הגשות כפולות (אותו קורס + אותו תאריך) כדי להתריע עליהן במנהל.
   function computeDuplicateKeys(items) {
     const counts = new Map();
@@ -303,12 +311,18 @@
       .map((item) => {
         const late = window.LogisticReport.isLate(item);
         const isDuplicate = duplicateKeys.has(`${item.courseName || ''}|${item.courseDate || ''}`);
+        const classroomText = item.needsClassroom ? (item.classroomHours || 'כן') : 'לא';
         return `<tr class="${late ? 'late' : ''}" data-id="${item.id}">
           <td data-label="קורס">${bdi(item.courseName)}${isDuplicate ? ' <span class="tag tag-duplicate" title="קיימת הגשה נוספת לאותו קורס ותאריך">⚠ כפילות</span>' : ''}</td>
           <td data-label="תאריך">${escapeHtml(item.courseDate)}</td>
           <td data-label="שעות">${escapeHtml(item.startTime)}-${escapeHtml(item.endTime)}</td>
           <td data-label="מדריך" title="${escapeHtml(item.submitterEmail || '')}">${bdi(item.submitterName)}</td>
           <td data-label="חניכים">${escapeHtml(item.traineesCount || '-')}</td>
+          <td data-label="מיקום">${bdi(item.location || '-')}</td>
+          <td data-label="כיתה">${bdi(classroomText)}</td>
+          <td data-label="אמל&quot;ח">${bdi(itemsSummaryText(item.equipmentItems))}</td>
+          <td data-label="ציוד לוגיסטי">${bdi(itemsSummaryText(item.logisticsItems))}</td>
+          <td data-label="הערות">${bdi(item.notes || '-')}</td>
           <td data-label="סטטוס"><span class="tag ${late ? 'tag-late' : 'tag-ok'}">${late ? 'באיחור' : 'בזמן'}</span></td>
           <td data-label="פעולות">
             <button class="btn btn-secondary edit-btn" data-id="${item.id}">ערוך</button>
@@ -319,7 +333,7 @@
       .join('');
     tableWrap.innerHTML = `<table>
       <thead><tr>
-        <th>קורס</th><th>תאריך</th><th>שעות</th><th>מדריך</th><th>חניכים</th><th>סטטוס</th><th></th>
+        <th>קורס</th><th>תאריך</th><th>שעות</th><th>מדריך</th><th>חניכים</th><th>מיקום</th><th>כיתה</th><th>אמל"ח</th><th>ציוד לוגיסטי</th><th>הערות</th><th>סטטוס</th><th></th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>`;

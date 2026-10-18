@@ -262,8 +262,13 @@ body.has-sticky-submit { padding-bottom: 96px; }
 }
 .admin-bar .field { margin: 0; min-width: 160px; }
 
+/* הטבלה בניהול גדלה בהדרגה (מיקום/כיתה/אמל"ח/ציוד לוגיסטי/הערות) - עם גלילה אופקית
+   כרשת-ביטחון כשיש הרבה עמודות, במקום שהתוכן "יישבר" או יגלוש מחוץ לדף. במובייל הטבלה
+   הופכת לכרטיסים (ראו למטה) כך שהגלילה הזו לא נכנסת לתמונה שם. */
+#tableWrap { overflow-x: auto; }
 table {
   width: 100%;
+  min-width: 920px;
   border-collapse: collapse;
   background: linear-gradient(180deg, var(--card), var(--card-alt));
   border: 1px solid var(--border-soft);
@@ -288,7 +293,7 @@ tr.late td { background: rgba(213, 56, 79, 0.05); }
 /* מתחת לרוחב מסוים הטבלה עוברת מ"טבלה" ל"כרטיסים" - כל שורה הופכת לכרטיס, וכל תא
    מציג לצידו את שם העמודה שלו (data-label) במקום כותרת טבלה שממילא לא נכנסת ברוחב טלפון. */
 @media (max-width: 640px) {
-  table, table thead, table tbody, table tr, table td { display: block; width: 100%; }
+  table, table thead, table tbody, table tr, table td { display: block; width: 100%; min-width: 0; }
   table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   table { overflow: visible; box-shadow: none; border: none; background: none; }
   table tr {
@@ -315,6 +320,18 @@ tr.late td { background: rgba(213, 56, 79, 0.05); }
     color: var(--muted);
     font-size: 0.78rem;
     flex-shrink: 0;
+  }
+  /* שדות שעלולים להיות ארוכים (מיקום/כיתה/אמל"ח/ציוד לוגיסטי/הערות) - תווית מעל ערך
+     במקום שורה אחת "תווית ... ערך" שנחתכת/נדחסת כשהערך ארוך. */
+  table td[data-label="מיקום"],
+  table td[data-label="כיתה"],
+  table td[data-label='אמל"ח'],
+  table td[data-label="ציוד לוגיסטי"],
+  table td[data-label="הערות"] {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: right;
+    gap: 4px;
   }
   .admin-bar { flex-direction: column; align-items: stretch; }
   .admin-bar .field { min-width: 0; }
