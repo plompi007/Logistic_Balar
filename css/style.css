@@ -112,7 +112,12 @@ input[type="date"]::-webkit-calendar-picker-indicator,
 input[type="time"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
 }
-input[type="date"], input[type="time"] { color-scheme: light; }
+/* הדף כולו RTL (dir="rtl"), אבל דפדפני דסקטופ מבוססי-כרום "יורשים" את זה גם לתוך הבקר
+   הילידי של date/time ומציגים את המקטעים (שעה:דקה, יום-חודש-שנה) הפוכים (למשל "30:08"
+   במקום "08:30") - למרות שבנייד (עם ה-picker של המערכת) זה בד"כ נראה תקין. כופים LTR
+   רק על הבקרים האלה כדי שסדר הספרות הפנימי יהיה נכון, עם יישור ימינה כדי שזה עדיין
+   ישב באותו צד כמו שאר השדות בטופס ה-RTL. */
+input[type="date"], input[type="time"] { color-scheme: light; direction: ltr; text-align: right; }
 
 .checkbox-field { flex-direction: row; align-items: center; gap: 10px; }
 .checkbox-field input { width: 18px; height: 18px; accent-color: var(--primary); }
