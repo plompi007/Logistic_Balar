@@ -3,9 +3,11 @@ service cloud.firestore {
   match /databases/{database}/documents {
     match /submissions/{submissionId} {
       // כל משתמש שמחובר עם Google יכול להגיש דרישה חדשה (הטופס הציבורי מחייב התחברות),
-      // בכפוף לשדות חובה בסיסיים, וש-submitterEmail תואם את המשתמש המחובר בפועל.
+      // בכפוף לשדות חובה בסיסיים, וש-submitterEmail תואם את המשתמש המחובר בפועל (.lower()
+      // משני הצדדים - כתובת Gmail לא תלוית-רישיות, וכתובת שנשמרה פעם ברישיות שונה מהטוקן
+      // הנוכחי לא אמורה לחסום פעולות על ההגשה של אותו משתמש עצמו).
       allow create: if request.auth != null
-        && request.resource.data.submitterEmail == request.auth.token.email
+        && request.resource.data.submitterEmail.lower() == request.auth.token.email.lower()
         && request.resource.data.courseName is string
         && request.resource.data.courseName.size() > 0
         && request.resource.data.submitterName is string
@@ -21,12 +23,13 @@ service cloud.firestore {
             "nohar.tzur@gmail.com",
             "yonatan1279@gmail.com"
           ]
-          || resource.data.submitterEmail == request.auth.token.email
+          || resource.data.submitterEmail.lower() == request.auth.token.email.lower()
         );
 
       // עדכון: מנהלים יכולים לעדכן כל הגשה. משתמש רגיל יכול לערוך רק הגשה שהוא עצמו הגיש
       // (submitterEmail לפני ואחרי העדכון חייב להישאר שלו - כדי שלא יוכל "לגנוב" הגשה של
       // מישהו אחר או להעביר הגשה שלו למישהו אחר), ובכפוף לאותם שדות חובה בסיסיים כמו ביצירה.
+      // .lower() משני הצדדים כאן גם, מאותה סיבה כמו ב-create.
       allow update: if request.auth != null
         && (
           request.auth.token.email.lower() in [
@@ -34,8 +37,8 @@ service cloud.firestore {
             "yonatan1279@gmail.com"
           ]
           || (
-            resource.data.submitterEmail == request.auth.token.email
-            && request.resource.data.submitterEmail == request.auth.token.email
+            resource.data.submitterEmail.lower() == request.auth.token.email.lower()
+            && request.resource.data.submitterEmail.lower() == request.auth.token.email.lower()
             && request.resource.data.courseName is string
             && request.resource.data.courseName.size() > 0
             && request.resource.data.submitterName is string
@@ -56,7 +59,7 @@ service cloud.firestore {
     match /feedback/{feedbackId} {
       // כל משתמש מחובר יכול לדווח על באג/הצעת שיפור מהטופס הציבורי.
       allow create: if request.auth != null
-        && request.resource.data.submitterEmail == request.auth.token.email
+        && request.resource.data.submitterEmail.lower() == request.auth.token.email.lower()
         && request.resource.data.message is string
         && request.resource.data.message.size() > 0;
 
@@ -80,7 +83,7 @@ service cloud.firestore {
     match /pushSubscriptions/{subId} {
       // כל משתמש מחובר יכול לרשום מנוי push לעצמו (הפעלת התראות בטופס/בניהול).
       allow create: if request.auth != null
-        && request.resource.data.userEmail == request.auth.token.email;
+        && request.resource.data.userEmail.lower() == request.auth.token.email.lower();
 
       // קריאה: רק מנהלים (נדרש לסקריפטים המתוזמנים). מחיקה: המשתמש יכול לבטל מנוי משלו,
       // וגם מנהלים - וכן הסקריפטים המתוזמנים (Service Account, עוקף rules) מנקים מנויים שפגו.
@@ -95,7 +98,7 @@ service cloud.firestore {
             "nohar.tzur@gmail.com",
             "yonatan1279@gmail.com"
           ]
-          || resource.data.userEmail == request.auth.token.email
+          || resource.data.userEmail.lower() == request.auth.token.email.lower()
         );
     }
   }

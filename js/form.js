@@ -542,9 +542,27 @@
     }
   }
 
+  // האם יש בטופס כרגע תוכן שעוד לא נשלח - כדי להזהיר לפני שדורסים אותו בטעינת הגשה אחרת
+  // לעריכה (ערוך קורא ל-startEditSubmission שממלא את כל השדות מחדש, בלי לשאול קודם).
+  function formHasUnsavedContent() {
+    if (getCurrentCourseName()) return true;
+    if (equipmentGrid.querySelector('.item-chip.selected')) return true;
+    if (document.getElementById('notes').value.trim()) return true;
+    return Array.from(document.getElementById('logisticsItems').querySelectorAll('.item-row'))
+      .some((row) => {
+        const select = row.querySelector('.item-name-select');
+        const name = select.value === 'אחר' ? row.querySelector('.item-name-other').value.trim() : select.value;
+        return !!name;
+      });
+  }
+
   // עריכת הגשה קיימת: טוען את כל השדות של ההגשה השמורה לתוך הטופס הרגיל, ומסמן editingId
   // כדי ש-submit יעדכן את ההגשה הקיימת (permission ב-firestore.rules) במקום ליצור חדשה.
   function startEditSubmission(id, data) {
+    if (editingId !== id && formHasUnsavedContent()) {
+      const confirmed = confirm('יש בטופס תוכן שעדיין לא נשלח - טעינת ההגשה לעריכה תמחק אותו. להמשיך?');
+      if (!confirmed) return;
+    }
     editingId = id;
 
     submitterNameInput.value = data.submitterName || '';
